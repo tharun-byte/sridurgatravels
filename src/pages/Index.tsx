@@ -38,6 +38,7 @@ const Index = () => {
         id: `default-${i}`,
         ...v,
         type: v.type as any,
+        description: v.description || null,
         is_featured: true,
         is_active: true,
         created_at: new Date().toISOString(),
