@@ -64,7 +64,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth">
+              <Link to="/admin/login">
                 <Button variant="ghost" size="sm" className="text-hero-foreground hover:text-primary">
                   <User className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Login</span>
