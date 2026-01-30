@@ -4,7 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+
+// Public pages
 import Index from "./pages/Index";
+import About from "./pages/About";
+import Rentals from "./pages/Rentals";
+import Trekking from "./pages/Trekking";
+import Gallery from "./pages/Gallery";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -26,7 +33,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/rentals" element={<Rentals />} />
+            <Route path="/trekking" element={<Trekking />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/contact" element={<Contact />} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
