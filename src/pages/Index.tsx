@@ -56,7 +56,15 @@ const Index = () => {
       .limit(4);
     
     if (data && data.length > 0) {
-      setTreks(data.map(t => ({ ...t, images: t.trek_images })) as Trek[]);
+      setTreks(data.map(t => ({ 
+        ...t, 
+        images: t.trek_images,
+        highlights: Array.isArray(t.highlights) ? t.highlights as string[] : [],
+        itinerary: Array.isArray(t.itinerary) ? (t.itinerary as unknown as Trek['itinerary']) : [],
+        inclusions: Array.isArray(t.inclusions) ? t.inclusions as string[] : [],
+        exclusions: Array.isArray(t.exclusions) ? t.exclusions as string[] : [],
+        things_to_carry: Array.isArray(t.things_to_carry) ? t.things_to_carry as string[] : [],
+      })) as Trek[]);
     } else {
       setTreks(DEFAULT_TREKS.slice(0, 4).map((t, i) => ({
         id: `default-${i}`,
