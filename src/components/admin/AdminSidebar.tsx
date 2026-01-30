@@ -38,7 +38,7 @@ const menuItems = [
   { title: 'Bookings', url: '/admin/bookings', icon: Calendar },
   { title: 'Messages', url: '/admin/messages', icon: Mail },
   { title: 'Gallery', url: '/admin/gallery', icon: Image },
-  { title: 'Users', url: '/admin/users', icon: Users },
+  { title: 'Admin Users', url: '/admin/users', icon: Users },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
 
