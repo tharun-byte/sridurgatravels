@@ -10,10 +10,10 @@ export function FeaturedTrekBanner() {
         <img
           src="/images/treks/kodachadri-trek.jpg"
           alt="Trekking Adventure"
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/80 to-[#0f172a]/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-[#0f172a]/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/70 via-[#0f172a]/50 to-[#0f172a]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 via-transparent to-[#0f172a]/30" />
       </div>
 
       {/* Subtle animated glow */}
@@ -69,7 +69,7 @@ export function FeaturedTrekBanner() {
                 </Button>
               </Link>
               <Link to="/contact">
-                <Button size="lg" variant="outline" className="border-slate-500 text-white hover:bg-white/10 hover:border-white/50 px-6 md:px-8">
+                <Button size="lg" variant="outline" className="border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:text-blue-300 px-6 md:px-8">
                   Contact Us
                 </Button>
               </Link>
