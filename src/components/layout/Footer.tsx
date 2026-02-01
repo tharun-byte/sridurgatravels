@@ -7,47 +7,47 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#0a1628] text-white">
-      <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-[#0a1628] text-white mb-16 lg:mb-0">
+      <div className="container px-4 py-10 md:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="col-span-2 md:col-span-2 lg:col-span-1 space-y-4">
             <div className="flex items-center">
               <img 
                 src={logoTransparent} 
                 alt="Sri Durga Travels Logo" 
-                className="h-32 md:h-40 w-auto"
+                className="h-20 sm:h-28 md:h-40 w-auto"
               />
             </div>
-            <p className="text-white/70 text-sm leading-relaxed">
+            <p className="text-white/70 text-xs sm:text-sm leading-relaxed">
               {COMPANY_INFO.tagline}. With over {COMPANY_INFO.experience} years of experience, 
               we provide reliable and comfortable travel solutions across South India.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Facebook className="h-5 w-5" />
+                <Facebook className="h-4 w-4 md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Instagram className="h-5 w-5" />
+                <Instagram className="h-4 w-4 md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Twitter className="h-5 w-5" />
+                <Twitter className="h-4 w-4 md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Youtube className="h-5 w-5" />
+                <Youtube className="h-4 w-4 md:h-5 md:w-5" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading font-bold text-lg mb-4 text-white">Quick Links</h4>
-            <ul className="space-y-2">
+            <h4 className="font-heading font-bold text-sm md:text-lg mb-3 md:mb-4 text-white">Quick Links</h4>
+            <ul className="space-y-1.5 md:space-y-2">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-white/70 hover:text-primary transition-colors text-sm"
+                    className="text-white/70 hover:text-primary transition-colors text-xs md:text-sm"
                   >
                     {link.name}
                   </Link>
@@ -57,9 +57,9 @@ export function Footer() {
           </div>
 
           {/* Services */}
-          <div>
-            <h4 className="font-heading font-bold text-lg mb-4 text-white">Our Services</h4>
-            <ul className="space-y-2 text-sm text-white/70">
+          <div className="hidden sm:block">
+            <h4 className="font-heading font-bold text-sm md:text-lg mb-3 md:mb-4 text-white">Our Services</h4>
+            <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-white/70">
               <li>
                 <Link to="/rentals" className="hover:text-primary transition-colors">
                   Bus Rentals
@@ -90,28 +90,28 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-heading font-bold text-lg mb-4 text-white">Contact Us</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-white/70">{COMPANY_INFO.address}</span>
+            <h4 className="font-heading font-bold text-sm md:text-lg mb-3 md:mb-4 text-white">Contact Us</h4>
+            <ul className="space-y-2 md:space-y-3">
+              <li className="flex items-start gap-2 md:gap-3">
+                <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-xs md:text-sm text-white/70">{COMPANY_INFO.address}</span>
               </li>
-              {COMPANY_INFO.phones.map((phone, index) => (
-                <li key={index} className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-primary shrink-0" />
+              {COMPANY_INFO.phones.slice(0, 2).map((phone, index) => (
+                <li key={index} className="flex items-center gap-2 md:gap-3">
+                  <Phone className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
                   <a
                     href={`tel:${phone}`}
-                    className="text-sm text-white/70 hover:text-primary transition-colors"
+                    className="text-xs md:text-sm text-white/70 hover:text-primary transition-colors"
                   >
                     {phone}
                   </a>
                 </li>
               ))}
-              <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
+              <li className="flex items-center gap-2 md:gap-3">
+                <Mail className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
                 <a
                   href={`mailto:${COMPANY_INFO.email}`}
-                  className="text-sm text-white/70 hover:text-primary transition-colors"
+                  className="text-xs md:text-sm text-white/70 hover:text-primary transition-colors break-all"
                 >
                   {COMPANY_INFO.email}
                 </a>
@@ -121,17 +121,17 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-white/20">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-white/50">
+        <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-white/20">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+            <p className="text-xs md:text-sm text-white/50 text-center">
               © {currentYear} {COMPANY_INFO.name}. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm text-white/50">
+            <div className="flex gap-4 md:gap-6 text-xs md:text-sm text-white/50">
               <Link to="/terms" className="hover:text-primary transition-colors">
-                Terms & Conditions
+                Terms
               </Link>
               <Link to="/privacy" className="hover:text-primary transition-colors">
-                Privacy Policy
+                Privacy
               </Link>
             </div>
           </div>

@@ -92,23 +92,23 @@ const Index = () => {
       
       {/* Bus Rental Packages */}
       <section className="section-padding">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+        <div className="container px-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">
               Our <span className="text-primary">Bus Rental Packages</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
               Choose from our wide range of well-maintained buses and tempo travellers for any occasion.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {vehicles.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>
-          <div className="text-center mt-8">
+          <div className="text-center mt-6 md:mt-8">
             <Link to="/rentals">
-              <Button size="lg" variant="outline">View All Vehicles</Button>
+              <Button size="lg" variant="outline" className="text-sm md:text-base">View All Vehicles</Button>
             </Link>
           </div>
         </div>
@@ -119,23 +119,23 @@ const Index = () => {
 
       {/* Trekking Packages */}
       <section className="section-padding">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+        <div className="container px-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">
               Popular <span className="text-primary">Trekking Packages</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
               Explore the Western Ghats with our guided trekking and tour packages.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {treks.map((trek) => (
               <TrekCard key={trek.id} trek={trek} />
             ))}
           </div>
-          <div className="text-center mt-8">
+          <div className="text-center mt-6 md:mt-8">
             <Link to="/trekking">
-              <Button size="lg" variant="outline">View All Packages</Button>
+              <Button size="lg" variant="outline" className="text-sm md:text-base">View All Packages</Button>
             </Link>
           </div>
         </div>

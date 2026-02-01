@@ -71,24 +71,26 @@ const Rentals = () => {
       <section className="section-padding">
         <div className="container">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex justify-center mb-8">
-              <TabsList className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                <TabsTrigger value="all" className="flex items-center gap-2">
-                  All Vehicles
+            <div className="flex justify-center mb-6 md:mb-8 overflow-x-auto px-2">
+              <TabsList className="inline-flex h-auto p-1 bg-muted/50 rounded-lg gap-1 min-w-max">
+                <TabsTrigger value="all" className="px-3 py-2 text-xs md:text-sm whitespace-nowrap">
+                  All
                 </TabsTrigger>
-                <TabsTrigger value="cars" className="flex items-center gap-2">
-                  <Car className="h-4 w-4" />
-                  Cars
+                <TabsTrigger value="cars" className="px-3 py-2 text-xs md:text-sm whitespace-nowrap flex items-center gap-1.5">
+                  <Car className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Cars</span>
                 </TabsTrigger>
-                <TabsTrigger value="tempo_traveller" className="flex items-center gap-2">
-                  Tempo Travellers
+                <TabsTrigger value="tempo_traveller" className="px-3 py-2 text-xs md:text-sm whitespace-nowrap">
+                  <span className="sm:hidden">TT</span>
+                  <span className="hidden sm:inline">Tempo Travellers</span>
                 </TabsTrigger>
-                <TabsTrigger value="mini_bus" className="flex items-center gap-2">
-                  Mini Buses
+                <TabsTrigger value="mini_bus" className="px-3 py-2 text-xs md:text-sm whitespace-nowrap">
+                  <span className="sm:hidden">Mini</span>
+                  <span className="hidden sm:inline">Mini Buses</span>
                 </TabsTrigger>
-                <TabsTrigger value="buses" className="flex items-center gap-2">
-                  <Bus className="h-4 w-4" />
-                  Coaches & Luxury
+                <TabsTrigger value="buses" className="px-3 py-2 text-xs md:text-sm whitespace-nowrap flex items-center gap-1.5">
+                  <Bus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Coaches</span>
                 </TabsTrigger>
               </TabsList>
             </div>

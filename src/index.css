@@ -148,7 +148,11 @@
   }
 
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-12 md:py-16 lg:py-24;
+  }
+
+  .section-padding-sm {
+    @apply py-8 md:py-12;
   }
 
   .container-padding {
@@ -256,6 +260,24 @@
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
+  }
+
+  /* Mobile-specific utilities */
+  .mobile-card {
+    @apply rounded-xl overflow-hidden shadow-sm active:scale-[0.98] transition-transform duration-150;
+  }
+
+  .touch-action-pan-y {
+    touch-action: pan-y;
+  }
+
+  /* Safe area padding for iOS notch/home indicator */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
 
