@@ -24,7 +24,7 @@ export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProp
           alt={vehicle.name}
           className="w-full h-full object-cover transition-all duration-500 md:duration-700 group-hover:scale-105 group-hover:brightness-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 md:duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 md:duration-500 pointer-events-none" />
         <Badge className="absolute top-2 left-2 md:top-3 md:left-3 bg-primary text-primary-foreground shadow-lg shadow-primary/50 transition-all duration-300 text-xs md:text-sm">
           {VEHICLE_TYPES[vehicle.type as VehicleType]}
         </Badge>
