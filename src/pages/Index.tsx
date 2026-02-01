@@ -8,6 +8,11 @@ import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { StatsSection } from '@/components/home/StatsSection';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { CTASection } from '@/components/home/CTASection';
+import { TrekHighlightsSection } from '@/components/home/TrekHighlightsSection';
+import { FeaturedTrekBanner } from '@/components/home/FeaturedTrekBanner';
+import { TrekCategoriesSection } from '@/components/home/TrekCategoriesSection';
+import { UpcomingTripsSection } from '@/components/home/UpcomingTripsSection';
+import { TrekGalleryPreview } from '@/components/home/TrekGalleryPreview';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_VEHICLES, DEFAULT_TREKS } from '@/lib/constants';
@@ -115,7 +120,14 @@ const Index = () => {
       </section>
 
       <WhyChooseUs />
+      
+      {/* Featured Trek Banner */}
+      <FeaturedTrekBanner />
+
       <StatsSection />
+
+      {/* Trek Categories */}
+      <TrekCategoriesSection />
 
       {/* Trekking Packages */}
       <section className="section-padding">
@@ -140,6 +152,15 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Why Trek With Us */}
+      <TrekHighlightsSection />
+
+      {/* Upcoming Trips */}
+      <UpcomingTripsSection />
+
+      {/* Gallery Preview */}
+      <TrekGalleryPreview />
 
       <TestimonialsSection />
       <CTASection />
