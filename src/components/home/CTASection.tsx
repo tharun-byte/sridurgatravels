@@ -39,10 +39,9 @@ export function CTASection() {
           <a href={`tel:${COMPANY_INFO.phones[0]}`}>
             <Button 
               size="lg" 
-              variant="outline" 
-              className="text-lg px-8 border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transition-all duration-300 hover:shadow-xl hover:shadow-white/20 hover:scale-105 active:scale-95 group"
+              className="text-lg px-8 bg-white text-primary font-bold border-2 border-white hover:bg-primary-foreground hover:text-primary transition-all duration-300 hover:shadow-xl hover:shadow-white/40 hover:scale-105 active:scale-95 group"
             >
-              <Phone className="h-5 w-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              <Phone className="h-5 w-5 mr-2 transition-transform duration-300 group-hover:rotate-12 group-hover:animate-pulse" />
               Call Now
             </Button>
           </a>

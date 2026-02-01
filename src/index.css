@@ -144,7 +144,7 @@
 
 @layer components {
   .hero-overlay {
-    background: linear-gradient(to right, hsl(var(--hero) / 0.9), hsl(var(--hero) / 0.6));
+    background: linear-gradient(to right, hsl(var(--hero) / 0.7), hsl(var(--hero) / 0.4));
   }
 
   .section-padding {

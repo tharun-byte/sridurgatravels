@@ -6,6 +6,8 @@ import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { CTASection } from '@/components/home/CTASection';
 import { Users, Bus, Award, Clock, Wallet, Car, User } from 'lucide-react';
 import aboutBanner from '@/assets/banners/about-banner.jpg';
+import aboutFleet from '@/assets/banners/about-fleet.jpg';
+import aboutTrekking from '@/assets/banners/about-trekking.jpg';
 
 const iconMap: Record<string, React.ElementType> = {
   wallet: Wallet,
@@ -54,7 +56,7 @@ const About = () => {
             </div>
             <div className="relative">
               <img
-                src={aboutBanner}
+                src={aboutFleet}
                 alt="Sri Durga Travels Fleet"
                 className="rounded-2xl shadow-xl w-full h-[400px] object-cover"
               />
@@ -110,29 +112,50 @@ const About = () => {
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-10 w-10 text-primary" />
+            <div className="text-center p-6 group">
+              <div className="relative">
+                <img
+                  src={aboutFleet}
+                  alt="Our Fleet"
+                  className="w-full h-48 object-cover rounded-xl mb-6 group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="font-heading font-bold text-xl text-white">Customer First</h3>
+                </div>
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Customer First</h3>
               <p className="text-muted-foreground">
                 Your satisfaction is our top priority. We go the extra mile to ensure every journey exceeds expectations.
               </p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bus className="h-10 w-10 text-primary" />
+            <div className="text-center p-6 group">
+              <div className="relative">
+                <img
+                  src={aboutTrekking}
+                  alt="Trekking Adventures"
+                  className="w-full h-48 object-cover rounded-xl mb-6 group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="font-heading font-bold text-xl text-white">Safety & Quality</h3>
+                </div>
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Safety & Quality</h3>
               <p className="text-muted-foreground">
                 Well-maintained vehicles, professional drivers, and strict safety protocols for peace of mind.
               </p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-10 w-10 text-primary" />
+            <div className="text-center p-6 group">
+              <div className="relative">
+                <img
+                  src={aboutBanner}
+                  alt="Our Commitment"
+                  className="w-full h-48 object-cover rounded-xl mb-6 group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="font-heading font-bold text-xl text-white">Integrity</h3>
+                </div>
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Integrity</h3>
               <p className="text-muted-foreground">
                 Transparent pricing, honest service, and genuine care for every customer we serve.
               </p>

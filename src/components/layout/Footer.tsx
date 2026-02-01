@@ -16,7 +16,7 @@ export function Footer() {
               <img 
                 src={logoWhite} 
                 alt="Sri Durga Travels Logo" 
-                className="h-20 w-auto"
+                className="h-32 md:h-40 w-auto"
               />
             </div>
             <p className="text-white/70 text-sm leading-relaxed">

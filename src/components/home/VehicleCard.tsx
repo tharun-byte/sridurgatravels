@@ -18,11 +18,11 @@ export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProp
 
   return (
     <Card className="overflow-hidden group card-glow border-border/50 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 bg-card/80 backdrop-blur-sm">
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-56 overflow-hidden">
         <img
           src={primaryImage}
           alt={vehicle.name}
-          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+          className="w-full h-full object-contain bg-muted/20 transition-all duration-700 group-hover:scale-105 group-hover:brightness-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground shadow-lg shadow-primary/50 transition-all duration-300 group-hover:scale-110">
