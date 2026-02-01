@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, Building2, Mail, Share2 } from 'lucide-react';
+import { Loader2, Save, Building2, Mail, Share2, MessageCircle } from 'lucide-react';
 import { COMPANY_INFO } from '@/lib/constants';
 
 type Setting = { key: string; value: string | null };
@@ -39,6 +39,9 @@ export default function SettingsPage() {
   const [twitter, setTwitter] = useState('');
   const [youtube, setYoutube] = useState('');
 
+  // Floating buttons state
+  const [whatsappNumber, setWhatsappNumber] = useState(COMPANY_INFO.phones[0]);
+  const [floatingButtonsEnabled, setFloatingButtonsEnabled] = useState(true);
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
@@ -75,6 +78,9 @@ export default function SettingsPage() {
       setInstagram(getValue('instagram_url'));
       setTwitter(getValue('twitter_url'));
       setYoutube(getValue('youtube_url'));
+
+      setWhatsappNumber(getValue('whatsapp_number', COMPANY_INFO.phones[0]));
+      setFloatingButtonsEnabled(getValue('floating_buttons_enabled', 'true') !== 'false');
     }
   }, [settings]);
 
@@ -140,6 +146,13 @@ export default function SettingsPage() {
     ]);
   };
 
+  const saveFloatingButtonSettings = () => {
+    saveMutation.mutate([
+      { key: 'whatsapp_number', value: whatsappNumber },
+      { key: 'floating_buttons_enabled', value: floatingButtonsEnabled.toString() },
+    ]);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -156,14 +169,18 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             General
           </TabsTrigger>
+          <TabsTrigger value="floating" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            Floating Buttons
+          </TabsTrigger>
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Email Integration
+            Email
           </TabsTrigger>
           <TabsTrigger value="social" className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
@@ -245,6 +262,70 @@ export default function SettingsPage() {
                 {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Save className="h-4 w-4 mr-2" />
                 Save General Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Floating Buttons Tab */}
+        <TabsContent value="floating">
+          <Card>
+            <CardHeader>
+              <CardTitle>Floating Contact Buttons</CardTitle>
+              <CardDescription>
+                Configure the sticky WhatsApp and Phone buttons that appear on all pages
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-1">
+                  <Label>Enable Floating Buttons</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show WhatsApp and Phone buttons on all pages
+                  </p>
+                </div>
+                <Switch
+                  checked={floatingButtonsEnabled}
+                  onCheckedChange={setFloatingButtonsEnabled}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+                <Input
+                  id="whatsappNumber"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="+91 86188 25738"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Enter the phone number with country code (e.g., +91 86188 25738)
+                </p>
+              </div>
+
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Preview</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  The buttons will appear at the bottom-right corner of every page.
+                </p>
+                <div className="flex gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#25D366] flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="w-6 h-6 fill-white">
+                      <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                    </svg>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={saveFloatingButtonSettings} disabled={saveMutation.isPending}>
+                {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <Save className="h-4 w-4 mr-2" />
+                Save Floating Button Settings
               </Button>
             </CardContent>
           </Card>
