@@ -13,7 +13,7 @@ import {
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import logoWhite from '@/assets/logo-white.png';
+import logo from '@/assets/logo.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,13 +78,13 @@ export function Header() {
 
       {/* Main Navigation */}
       <nav className="bg-background border-b shadow-sm">
-        <div className="container flex items-center justify-between h-16">
+        <div className="container flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center h-full py-2">
             <img 
-              src={logoWhite} 
+              src={logo} 
               alt="Sri Durga Travels Logo" 
-              className="h-16 md:h-20 w-auto"
+              className="h-full w-auto max-h-16 object-contain"
             />
           </Link>
 
