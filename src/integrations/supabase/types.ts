@@ -306,6 +306,47 @@ export type Database = {
           },
         ]
       }
+      trek_reviews: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          name: string
+          rating: number | null
+          trek_id: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          name: string
+          rating?: number | null
+          trek_id: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          name?: string
+          rating?: number | null
+          trek_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trek_reviews_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treks: {
         Row: {
           altitude: string | null
@@ -325,6 +366,7 @@ export type Database = {
           itinerary: Json | null
           name: string
           price_per_person: number
+          review_count: number | null
           things_to_carry: Json | null
           updated_at: string
         }
@@ -346,6 +388,7 @@ export type Database = {
           itinerary?: Json | null
           name: string
           price_per_person: number
+          review_count?: number | null
           things_to_carry?: Json | null
           updated_at?: string
         }
@@ -367,6 +410,7 @@ export type Database = {
           itinerary?: Json | null
           name?: string
           price_per_person?: number
+          review_count?: number | null
           things_to_carry?: Json | null
           updated_at?: string
         }

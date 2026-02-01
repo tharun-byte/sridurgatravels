@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bus, Mountain, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +11,17 @@ const slides = [
     subtitle: 'Comfortable travel for groups of all sizes with experienced drivers',
     cta: 'Reserve Your Bus Today',
     href: '/rentals',
+    icon: Bus,
+    label: 'sleeper bus booking',
+  },
+  {
+    image: '/images/hero/hero-trekking.jpg',
+    title: 'Exciting Trekking Trips & Packages',
+    subtitle: 'Adventure awaits! Explore the Western Ghats with expert guides',
+    cta: 'Book Your Trek Now',
+    href: '/trekking',
+    icon: Mountain,
+    label: 'Trekking',
   },
   {
     image: '/images/hero/hero-cars.jpg',
@@ -18,13 +29,8 @@ const slides = [
     subtitle: 'Premium cars for family trips, airport transfers and outstation journeys',
     cta: 'Explore Car Rentals',
     href: '/rentals',
-  },
-  {
-    image: '/images/hero/hero-trekking.jpg',
-    title: 'Exciting Trekking & Tour Packages',
-    subtitle: 'Adventure awaits! Explore the Western Ghats with expert guides',
-    cta: 'View Trekking Packages',
-    href: '/trekking',
+    icon: Car,
+    label: 'Cars And Bus Rentals',
   },
 ];
 
@@ -59,6 +65,7 @@ export function HeroCarousel() {
           <div className="absolute inset-0 hero-overlay" />
           <div className="relative container h-full flex items-center">
             <div className="max-w-2xl animate-slide-up">
+              <p className="text-primary font-medium mb-2 italic">Adventure Awaits</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-hero-foreground mb-4 leading-tight">
                 {slide.title}
               </h1>
@@ -67,7 +74,7 @@ export function HeroCarousel() {
               </p>
               <Link to={slide.href}>
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8">
-                  {slide.cta}
+                  {slide.cta} »
                 </Button>
               </Link>
             </div>
@@ -75,35 +82,60 @@ export function HeroCarousel() {
         </div>
       ))}
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/20 hover:bg-background/40 text-hero-foreground transition-colors"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/20 hover:bg-background/40 text-hero-foreground transition-colors"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
+      {/* Icon Navigation at Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/30 backdrop-blur-sm">
+        <div className="container">
+          <div className="flex items-center justify-between py-4">
+            {/* Icon Buttons */}
+            <div className="flex items-center gap-8 md:gap-16">
+              {slides.map((slide, index) => {
+                const Icon = slide.icon;
+                const isActive = index === currentSlide;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={cn(
+                      "flex flex-col items-center gap-2 transition-all duration-300 group",
+                      isActive ? "scale-105" : "opacity-70 hover:opacity-100"
+                    )}
+                  >
+                    <div className={cn(
+                      "p-3 rounded-lg transition-colors",
+                      isActive ? "text-primary" : "text-hero-foreground group-hover:text-primary/80"
+                    )}>
+                      <Icon className="h-8 w-8 md:h-10 md:w-10" strokeWidth={1.5} />
+                    </div>
+                    <span className={cn(
+                      "text-xs md:text-sm font-medium transition-colors whitespace-nowrap",
+                      isActive ? "text-primary" : "text-hero-foreground group-hover:text-primary/80"
+                    )}>
+                      {slide.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-      {/* Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={cn(
-              "w-3 h-3 rounded-full transition-colors",
-              index === currentSlide ? "bg-primary" : "bg-hero-foreground/50 hover:bg-hero-foreground/80"
-            )}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+            {/* Arrow Navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={prevSlide}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-hero-foreground transition-colors"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-hero-foreground transition-colors"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
