@@ -18,7 +18,7 @@ export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProp
 
   return (
     <Card className="overflow-hidden group card-glow border-border/50 hover:border-primary/50 transition-all duration-300 md:duration-500 hover:shadow-xl md:hover:shadow-2xl hover:shadow-primary/20 md:hover:-translate-y-2 bg-card/80 backdrop-blur-sm active:scale-[0.98]">
-      <div className="relative h-44 sm:h-48 md:h-56 overflow-hidden">
+      <div className="relative h-48 sm:h-52 md:h-60 overflow-hidden">
         <img
           src={primaryImage}
           alt={vehicle.name}
