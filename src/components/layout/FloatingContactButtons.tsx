@@ -1,37 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
 import { Phone } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { COMPANY_INFO } from '@/lib/constants';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
 
 export function FloatingContactButtons() {
-  const { data: settings } = useQuery({
-    queryKey: ['floating-contact-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('key, value')
-        .in('key', ['whatsapp_number', 'phone_1', 'floating_buttons_enabled']);
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
+  const { data: settings, isLoading } = useSiteSettings();
 
-  const getValue = (key: string, defaultValue: string = '') => {
-    const setting = settings?.find((s) => s.key === key);
-    return setting?.value || defaultValue;
-  };
+  // Don't render anything while loading or if disabled
+  if (isLoading) return null;
+  if (!settings?.floatingButtonsEnabled) return null;
 
-  // Get values from settings or fallback to constants
-  const whatsappNumber = getValue('whatsapp_number', COMPANY_INFO.phones[0].replace(/\D/g, ''));
-  const phoneNumber = getValue('phone_1', COMPANY_INFO.phones[0]);
-  const isEnabled = getValue('floating_buttons_enabled', 'true') !== 'false';
-
-  if (!isEnabled) return null;
-
-  // Format WhatsApp number (remove spaces, dashes, etc.)
+  const whatsappNumber = settings?.whatsappNumber || settings?.phones?.[0] || '+918618825738';
+  // Clean the number for WhatsApp URL (remove spaces, dashes, etc.)
   const formattedWhatsApp = whatsappNumber.replace(/\D/g, '');
+  const phoneNumber = settings?.phones?.[0] || '+91 86188 25738';
+
   const whatsappUrl = `https://wa.me/${formattedWhatsApp}?text=${encodeURIComponent('Hi! I would like to inquire about your services.')}`;
 
   return (

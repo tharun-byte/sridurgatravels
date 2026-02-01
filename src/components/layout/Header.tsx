@@ -10,8 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
+import { NAV_LINKS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
 import logoTransparent from '@/assets/logo-transparent.png';
 
@@ -19,11 +20,15 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, profile, isAdmin, signOut } = useAuth();
+  const { data: settings } = useSiteSettings();
 
   const isActive = (href: string) => {
     if (href === '/') return location.pathname === '/';
     return location.pathname.startsWith(href);
   };
+
+  const email = settings?.email || 'contact@sridurgatravels.com';
+  const phone = settings?.phones?.[0] || '+91 86188 25738';
 
   return (
     <header className="sticky top-0 z-50">
@@ -31,13 +36,13 @@ export function Header() {
       <div className="hidden md:block bg-hero text-hero-foreground py-2">
         <div className="container flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
-            <a href={`mailto:${COMPANY_INFO.email}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-primary transition-colors">
               <Mail className="h-4 w-4" />
-              <span>{COMPANY_INFO.email}</span>
+              <span>{email}</span>
             </a>
-            <a href={`tel:${COMPANY_INFO.phones[0]}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+            <a href={`tel:${phone}`} className="flex items-center gap-2 hover:text-primary transition-colors">
               <Phone className="h-4 w-4" />
-              <span>{COMPANY_INFO.phones[0]}</span>
+              <span>{phone}</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -118,7 +123,7 @@ export function Header() {
           {/* Mobile Menu - Hidden since we have bottom nav */}
           <div className="lg:hidden flex items-center gap-2">
             {/* Quick call button for mobile */}
-            <a href={`tel:${COMPANY_INFO.phones[0]}`}>
+            <a href={`tel:${phone}`}>
               <Button variant="ghost" size="icon" className="text-primary">
                 <Phone className="h-5 w-5" />
               </Button>

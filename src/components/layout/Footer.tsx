@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
-import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
+import { NAV_LINKS, COMPANY_INFO } from '@/lib/constants';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import logoTransparent from '@/assets/logo-transparent.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { data: settings } = useSiteSettings();
+
+  const companyName = settings?.companyName || COMPANY_INFO.name;
+  const tagline = settings?.tagline || COMPANY_INFO.tagline;
+  const email = settings?.email || COMPANY_INFO.email;
+  const phones = settings?.phones?.length ? settings.phones : COMPANY_INFO.phones;
+  const address = settings?.address || COMPANY_INFO.address;
+  const facebookUrl = settings?.facebookUrl;
+  const instagramUrl = settings?.instagramUrl;
+  const twitterUrl = settings?.twitterUrl;
+  const youtubeUrl = settings?.youtubeUrl;
 
   return (
     <footer className="bg-[#0a1628] text-white mb-16 lg:mb-0">
@@ -15,27 +27,52 @@ export function Footer() {
             <div className="flex items-center">
               <img 
                 src={logoTransparent} 
-                alt="Sri Durga Travels Logo" 
+                alt={`${companyName} Logo`} 
                 className="h-20 sm:h-28 md:h-40 w-auto"
               />
             </div>
             <p className="text-white/70 text-xs sm:text-sm leading-relaxed">
-              {COMPANY_INFO.tagline}. With over {COMPANY_INFO.experience} years of experience, 
+              {tagline}. With over {COMPANY_INFO.experience} years of experience, 
               we provide reliable and comfortable travel solutions across South India.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Facebook className="h-4 w-4 md:h-5 md:w-5" />
-              </a>
-              <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Instagram className="h-4 w-4 md:h-5 md:w-5" />
-              </a>
-              <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Twitter className="h-4 w-4 md:h-5 md:w-5" />
-              </a>
-              <a href="#" className="text-white/70 hover:text-primary transition-colors">
-                <Youtube className="h-4 w-4 md:h-5 md:w-5" />
-              </a>
+              {facebookUrl && (
+                <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-primary transition-colors">
+                  <Facebook className="h-4 w-4 md:h-5 md:w-5" />
+                </a>
+              )}
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-primary transition-colors">
+                  <Instagram className="h-4 w-4 md:h-5 md:w-5" />
+                </a>
+              )}
+              {twitterUrl && (
+                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-primary transition-colors">
+                  <Twitter className="h-4 w-4 md:h-5 md:w-5" />
+                </a>
+              )}
+              {youtubeUrl && (
+                <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-primary transition-colors">
+                  <Youtube className="h-4 w-4 md:h-5 md:w-5" />
+                </a>
+              )}
+              {/* Show placeholder icons if no social links are set */}
+              {!facebookUrl && !instagramUrl && !twitterUrl && !youtubeUrl && (
+                <>
+                  <span className="text-white/30">
+                    <Facebook className="h-4 w-4 md:h-5 md:w-5" />
+                  </span>
+                  <span className="text-white/30">
+                    <Instagram className="h-4 w-4 md:h-5 md:w-5" />
+                  </span>
+                  <span className="text-white/30">
+                    <Twitter className="h-4 w-4 md:h-5 md:w-5" />
+                  </span>
+                  <span className="text-white/30">
+                    <Youtube className="h-4 w-4 md:h-5 md:w-5" />
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -94,9 +131,9 @@ export function Footer() {
             <ul className="space-y-2 md:space-y-3">
               <li className="flex items-start gap-2 md:gap-3">
                 <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-xs md:text-sm text-white/70">{COMPANY_INFO.address}</span>
+                <span className="text-xs md:text-sm text-white/70">{address}</span>
               </li>
-              {COMPANY_INFO.phones.slice(0, 2).map((phone, index) => (
+              {phones.slice(0, 2).map((phone, index) => (
                 <li key={index} className="flex items-center gap-2 md:gap-3">
                   <Phone className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
                   <a
@@ -110,10 +147,10 @@ export function Footer() {
               <li className="flex items-center gap-2 md:gap-3">
                 <Mail className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
                 <a
-                  href={`mailto:${COMPANY_INFO.email}`}
+                  href={`mailto:${email}`}
                   className="text-xs md:text-sm text-white/70 hover:text-primary transition-colors break-all"
                 >
-                  {COMPANY_INFO.email}
+                  {email}
                 </a>
               </li>
             </ul>
@@ -124,7 +161,7 @@ export function Footer() {
         <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-white/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
             <p className="text-xs md:text-sm text-white/50 text-center">
-              © {currentYear} {COMPANY_INFO.name}. All rights reserved.
+              © {currentYear} {companyName}. All rights reserved.
             </p>
             <div className="flex gap-4 md:gap-6 text-xs md:text-sm text-white/50">
               <Link to="/terms" className="hover:text-primary transition-colors">
