@@ -13,7 +13,7 @@ import {
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import logo from '@/assets/logo.png';
+import logoTransparent from '@/assets/logo-transparent.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,13 +79,15 @@ export function Header() {
       {/* Main Navigation */}
       <nav className="bg-background border-b shadow-sm">
         <div className="container flex items-center justify-between h-20">
-          {/* Logo */}
+          {/* Logo with dark pill background */}
           <Link to="/" className="flex items-center h-full py-2">
-            <img 
-              src={logo} 
-              alt="Sri Durga Travels Logo" 
-              className="h-full w-auto max-h-16 object-contain"
-            />
+            <div className="bg-hero/90 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center">
+              <img 
+                src={logoTransparent} 
+                alt="Sri Durga Travels Logo" 
+                className="h-12 md:h-14 w-auto object-contain"
+              />
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

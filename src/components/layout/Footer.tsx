@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
-import logoWhite from '@/assets/logo-white.png';
+import logoTransparent from '@/assets/logo-transparent.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -14,7 +14,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center">
               <img 
-                src={logoWhite} 
+                src={logoTransparent} 
                 alt="Sri Durga Travels Logo" 
                 className="h-32 md:h-40 w-auto"
               />
