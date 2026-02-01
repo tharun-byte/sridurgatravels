@@ -1,40 +1,40 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
-import logo from '@/assets/logo.png';
+import logoWhite from '@/assets/logo-white.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-hero text-hero-foreground">
+    <footer className="bg-[#0a1628] text-white">
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <img 
-                src={logo} 
+                src={logoWhite} 
                 alt="Sri Durga Travels Logo" 
                 className="h-14 w-auto"
               />
-              <span className="font-heading font-bold text-xl">{COMPANY_INFO.name}</span>
+              <span className="font-heading font-bold text-xl text-white">{COMPANY_INFO.name}</span>
             </div>
-            <p className="text-hero-foreground/80 text-sm leading-relaxed">
+            <p className="text-white/70 text-sm leading-relaxed">
               {COMPANY_INFO.tagline}. With over {COMPANY_INFO.experience} years of experience, 
               we provide reliable and comfortable travel solutions across South India.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="text-white/70 hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="text-white/70 hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="text-white/70 hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="text-white/70 hover:text-primary transition-colors">
                 <Youtube className="h-5 w-5" />
               </a>
             </div>
@@ -42,13 +42,13 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading font-bold text-lg mb-4">Quick Links</h4>
+            <h4 className="font-heading font-bold text-lg mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-hero-foreground/80 hover:text-primary transition-colors text-sm"
+                    className="text-white/70 hover:text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -59,8 +59,8 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="font-heading font-bold text-lg mb-4">Our Services</h4>
-            <ul className="space-y-2 text-sm text-hero-foreground/80">
+            <h4 className="font-heading font-bold text-lg mb-4 text-white">Our Services</h4>
+            <ul className="space-y-2 text-sm text-white/70">
               <li>
                 <Link to="/rentals" className="hover:text-primary transition-colors">
                   Bus Rentals
@@ -91,18 +91,18 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-heading font-bold text-lg mb-4">Contact Us</h4>
+            <h4 className="font-heading font-bold text-lg mb-4 text-white">Contact Us</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-hero-foreground/80">{COMPANY_INFO.address}</span>
+                <span className="text-sm text-white/70">{COMPANY_INFO.address}</span>
               </li>
               {COMPANY_INFO.phones.map((phone, index) => (
                 <li key={index} className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-primary shrink-0" />
                   <a
                     href={`tel:${phone}`}
-                    className="text-sm text-hero-foreground/80 hover:text-primary transition-colors"
+                    className="text-sm text-white/70 hover:text-primary transition-colors"
                   >
                     {phone}
                   </a>
@@ -112,7 +112,7 @@ export function Footer() {
                 <Mail className="h-5 w-5 text-primary shrink-0" />
                 <a
                   href={`mailto:${COMPANY_INFO.email}`}
-                  className="text-sm text-hero-foreground/80 hover:text-primary transition-colors"
+                  className="text-sm text-white/70 hover:text-primary transition-colors"
                 >
                   {COMPANY_INFO.email}
                 </a>
@@ -122,12 +122,12 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-hero-foreground/20">
+        <div className="mt-12 pt-8 border-t border-white/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-hero-foreground/60">
+            <p className="text-sm text-white/50">
               © {currentYear} {COMPANY_INFO.name}. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm text-hero-foreground/60">
+            <div className="flex gap-6 text-sm text-white/50">
               <Link to="/terms" className="hover:text-primary transition-colors">
                 Terms & Conditions
               </Link>

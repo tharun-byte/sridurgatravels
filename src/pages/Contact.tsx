@@ -28,6 +28,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, Clock, Loader2, Send } from 'lucide-react';
+import contactBanner from '@/assets/banners/contact-banner.jpg';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -110,13 +111,13 @@ const Contact = () => {
       <section className="relative h-[300px] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/hero/hero-bus.jpg)' }}
+          style={{ backgroundImage: `url(${contactBanner})` }}
         >
-          <div className="absolute inset-0 bg-hero/80" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-        <div className="relative z-10 text-center text-white">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">Contact Us</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto px-4">
+        <div className="relative z-10 text-center">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Contact Us</h1>
+          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
             Get in touch for bookings, inquiries, or any questions
           </p>
         </div>

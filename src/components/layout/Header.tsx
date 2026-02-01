@@ -13,7 +13,7 @@ import {
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import logo from '@/assets/logo.png';
+import logoWhite from '@/assets/logo-white.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,7 +82,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <img 
-              src={logo} 
+              src={logoWhite} 
               alt="Sri Durga Travels Logo" 
               className="h-12 w-auto"
             />

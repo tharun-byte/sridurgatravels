@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_VEHICLES, VEHICLE_TYPES } from '@/lib/constants';
 import type { Vehicle, VehicleType } from '@/types/database';
 import { Car, Bus } from 'lucide-react';
+import rentalsBanner from '@/assets/banners/rentals-banner.jpg';
 
 const Rentals = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -62,13 +63,13 @@ const Rentals = () => {
       <section className="relative h-[400px] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/hero/hero-cars.jpg)' }}
+          style={{ backgroundImage: `url(${rentalsBanner})` }}
         >
-          <div className="absolute inset-0 bg-hero/80" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-        <div className="relative z-10 text-center text-white px-4">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">Cars & Bus Rentals</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+        <div className="relative z-10 text-center px-4">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Cars & Bus Rentals</h1>
+          <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
             Choose from our wide range of well-maintained vehicles for any occasion
           </p>
         </div>
@@ -121,7 +122,7 @@ const Rentals = () => {
       <section className="section-padding bg-muted/30">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Our <span className="text-primary">Pricing Structure</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">

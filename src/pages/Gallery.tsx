@@ -4,6 +4,7 @@ import { CTASection } from '@/components/home/CTASection';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import galleryBanner from '@/assets/banners/gallery-banner.jpg';
 
 interface GalleryImage {
   id: string;
@@ -31,16 +32,17 @@ const Gallery = () => {
       // Default placeholder images
       const defaultImages = [
         '/images/vehicles/tt-13-seater.jpg',
-        '/images/vehicles/urbania-16.jpg',
-        '/images/vehicles/minibus-21.jpg',
-        '/images/vehicles/coach-33.jpg',
+        '/images/vehicles/urbania-luxury.jpg',
+        '/images/vehicles/21-seater.jpeg',
+        '/images/vehicles/33-seater.jpeg',
         '/images/vehicles/volvo-49.jpg',
-        '/images/vehicles/luxury-40.jpg',
-        '/images/vehicles/benz-45.jpg',
-        '/images/vehicles/volvo-45.jpg',
-        '/images/hero/hero-bus.jpg',
-        '/images/hero/hero-cars.jpg',
-        '/images/hero/hero-trekking.jpg',
+        '/images/vehicles/40-seater.jpeg',
+        '/images/vehicles/benz-45.jpeg',
+        '/images/vehicles/volvo-45-2x2.jpeg',
+        '/images/treks/kudremukh-trek.jpg',
+        '/images/treks/gokarna-beach.jpg',
+        '/images/treks/dudhsagar-falls.jpg',
+        '/images/treks/coorg-tour.jpg',
       ].map((url, i) => ({
         id: `default-${i}`,
         url,
@@ -71,13 +73,13 @@ const Gallery = () => {
       <section className="relative h-[300px] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/hero/hero-bus.jpg)' }}
+          style={{ backgroundImage: `url(${galleryBanner})` }}
         >
-          <div className="absolute inset-0 bg-hero/80" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-        <div className="relative z-10 text-center text-white">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">Our Gallery</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto px-4">
+        <div className="relative z-10 text-center">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Our Gallery</h1>
+          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
             Explore our fleet and travel experiences
           </p>
         </div>

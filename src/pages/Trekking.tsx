@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_TREKS, TREK_DIFFICULTIES } from '@/lib/constants';
 import type { Trek, TrekDifficulty } from '@/types/database';
 import { Mountain, MapPin, Compass } from 'lucide-react';
+import trekkingBanner from '@/assets/banners/trekking-banner.jpg';
 
 const Trekking = () => {
   const [treks, setTreks] = useState<Trek[]>([]);
@@ -70,13 +71,13 @@ const Trekking = () => {
       <section className="relative h-[400px] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/hero/hero-trekking.jpg)' }}
+          style={{ backgroundImage: `url(${trekkingBanner})` }}
         >
-          <div className="absolute inset-0 bg-hero/80" />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
-        <div className="relative z-10 text-center text-white px-4">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">Treks & Weekend Escapes</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+        <div className="relative z-10 text-center px-4">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Treks & Weekend Escapes</h1>
+          <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
             Explore the Western Ghats with our guided trekking and tour packages
           </p>
         </div>
@@ -126,7 +127,7 @@ const Trekking = () => {
       <section className="section-padding bg-muted/30">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-foreground">
               What's <span className="text-primary">Included</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -138,28 +139,28 @@ const Trekking = () => {
               <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-success text-2xl">🚐</span>
               </div>
-              <h3 className="font-heading font-bold mb-2">Transport</h3>
+              <h3 className="font-heading font-bold mb-2 text-foreground">Transport</h3>
               <p className="text-sm text-muted-foreground">Pick-up & drop from Bangalore by tempo traveller or bus</p>
             </div>
             <div className="bg-background p-6 rounded-xl border text-center">
               <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-success text-2xl">🏕️</span>
               </div>
-              <h3 className="font-heading font-bold mb-2">Accommodation</h3>
+              <h3 className="font-heading font-bold mb-2 text-foreground">Accommodation</h3>
               <p className="text-sm text-muted-foreground">Camping or homestay based on package type</p>
             </div>
             <div className="bg-background p-6 rounded-xl border text-center">
               <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-success text-2xl">🍽️</span>
               </div>
-              <h3 className="font-heading font-bold mb-2">Meals</h3>
+              <h3 className="font-heading font-bold mb-2 text-foreground">Meals</h3>
               <p className="text-sm text-muted-foreground">2 breakfasts, 1 packed lunch, 1 dinner included</p>
             </div>
             <div className="bg-background p-6 rounded-xl border text-center">
               <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-success text-2xl">🧭</span>
               </div>
-              <h3 className="font-heading font-bold mb-2">Guides & Permits</h3>
+              <h3 className="font-heading font-bold mb-2 text-foreground">Guides & Permits</h3>
               <p className="text-sm text-muted-foreground">Experienced trek leads, local guides, and all permits</p>
             </div>
           </div>
@@ -170,20 +171,20 @@ const Trekking = () => {
       <section className="section-padding">
         <div className="container max-w-4xl">
           <div className="text-center mb-8">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Things to <span className="text-primary">Carry</span>
             </h2>
           </div>
           <div className="bg-warning/10 border border-warning/30 rounded-xl p-6">
             <div className="grid md:grid-cols-2 gap-4">
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2 text-sm text-foreground">
                 <li className="flex items-center gap-2">✓ ID proof (Aadhar/Driving License)</li>
                 <li className="flex items-center gap-2">✓ Trekking shoes with good grip</li>
                 <li className="flex items-center gap-2">✓ 2 sets of clothes</li>
                 <li className="flex items-center gap-2">✓ Empty lunch box for packed lunch</li>
                 <li className="flex items-center gap-2">✓ Water bottle (2L minimum)</li>
               </ul>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2 text-sm text-foreground">
                 <li className="flex items-center gap-2">✓ Raincoat or poncho</li>
                 <li className="flex items-center gap-2">✓ Torch with extra batteries</li>
                 <li className="flex items-center gap-2">✓ Energy bars and snacks</li>

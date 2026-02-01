@@ -4,6 +4,7 @@ import { StatsSection } from '@/components/home/StatsSection';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { CTASection } from '@/components/home/CTASection';
 import { Users, Bus, Award, Clock, Wallet, Car, User } from 'lucide-react';
+import aboutBanner from '@/assets/banners/about-banner.jpg';
 
 const iconMap: Record<string, React.ElementType> = {
   wallet: Wallet,
@@ -19,13 +20,13 @@ const About = () => {
       <section className="relative h-[400px] flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/hero/hero-bus.jpg)' }}
+          style={{ backgroundImage: `url(${aboutBanner})` }}
         >
-          <div className="absolute inset-0 bg-hero/80" />
+          <div className="absolute inset-0 bg-black/70" />
         </div>
-        <div className="relative z-10 text-center text-white">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">About Us</h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto px-4">
+        <div className="relative z-10 text-center">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">About Us</h1>
+          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
             {COMPANY_INFO.experience} years of excellence in travel and transport services
           </p>
         </div>
@@ -36,7 +37,7 @@ const About = () => {
         <div className="container">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-foreground">
                 Our <span className="text-primary">Story</span>
               </h2>
               <div className="space-y-4 text-muted-foreground">
@@ -59,7 +60,7 @@ const About = () => {
             </div>
             <div className="relative">
               <img
-                src="/images/hero/hero-bus.jpg"
+                src={aboutBanner}
                 alt="Sri Durga Travels Fleet"
                 className="rounded-2xl shadow-xl w-full h-[400px] object-cover"
               />
@@ -79,7 +80,7 @@ const About = () => {
       <section className="section-padding bg-muted/30">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Why Choose <span className="text-primary">Sri Durga Travels</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -97,7 +98,7 @@ const About = () => {
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Icon className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg mb-2">{item.title}</h3>
+                  <h3 className="font-heading font-bold text-lg mb-2 text-foreground">{item.title}</h3>
                   <p className="text-muted-foreground text-sm">{item.description}</p>
                 </div>
               );
@@ -110,7 +111,7 @@ const About = () => {
       <section className="section-padding">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Our Core <span className="text-primary">Values</span>
             </h2>
           </div>
@@ -119,7 +120,7 @@ const About = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3">Customer First</h3>
+              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Customer First</h3>
               <p className="text-muted-foreground">
                 Your satisfaction is our top priority. We go the extra mile to ensure every journey exceeds expectations.
               </p>
@@ -128,7 +129,7 @@ const About = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bus className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3">Safety & Quality</h3>
+              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Safety & Quality</h3>
               <p className="text-muted-foreground">
                 Well-maintained vehicles, professional drivers, and strict safety protocols for peace of mind.
               </p>
@@ -137,7 +138,7 @@ const About = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3">Integrity</h3>
+              <h3 className="font-heading font-bold text-xl mb-3 text-foreground">Integrity</h3>
               <p className="text-muted-foreground">
                 Transparent pricing, honest service, and genuine care for every customer we serve.
               </p>
