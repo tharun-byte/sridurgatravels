@@ -28,6 +28,7 @@ import VehicleList from "./pages/admin/vehicles/VehicleList";
 import VehicleForm from "./pages/admin/vehicles/VehicleForm";
 import TrekList from "./pages/admin/treks/TrekList";
 import TrekForm from "./pages/admin/treks/TrekForm";
+import TrekDatesManager from "./pages/admin/treks/TrekDatesManager";
 import UserManagement from "./pages/admin/users/UserManagement";
 import BookingList from "./pages/admin/bookings/BookingList";
 import MessageList from "./pages/admin/messages/MessageList";
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="vehicles/new" element={<VehicleForm />} />
               <Route path="vehicles/:id" element={<VehicleForm />} />
               <Route path="treks" element={<TrekList />} />
+              <Route path="treks/dates" element={<TrekDatesManager />} />
               <Route path="treks/new" element={<TrekForm />} />
               <Route path="treks/:id" element={<TrekForm />} />
               <Route path="users" element={<UserManagement />} />
