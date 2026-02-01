@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Mountain, IndianRupee, MapPin, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import type { Trek, TrekDifficulty } from '@/types/database';
 
 interface TrekCardProps {
   trek: Trek;
+  showBookButton?: boolean;
 }
 
 const difficultyColors: Record<TrekDifficulty, string> = {
@@ -17,7 +18,8 @@ const difficultyColors: Record<TrekDifficulty, string> = {
   difficult: 'bg-destructive text-destructive-foreground shadow-destructive/50',
 };
 
-export function TrekCard({ trek }: TrekCardProps) {
+export function TrekCard({ trek, showBookButton = false }: TrekCardProps) {
+  const navigate = useNavigate();
   const primaryImage = trek.images?.find(img => img.is_primary)?.url || 
     trek.images?.[0]?.url || 
     '/images/hero/hero-trekking.jpg';
@@ -74,11 +76,12 @@ export function TrekCard({ trek }: TrekCardProps) {
             View Details
           </Button>
         </Link>
-        <Link to={`/contact?trek=${trek.id}`} className="flex-1">
-          <Button className="w-full bg-success text-success-foreground hover:bg-success/90 transition-all duration-300 hover:shadow-lg hover:shadow-success/40 hover:scale-105 active:scale-95">
-            Book Trek
-          </Button>
-        </Link>
+        <Button 
+          className="flex-1 bg-success text-success-foreground hover:bg-success/90 transition-all duration-300 hover:shadow-lg hover:shadow-success/40 hover:scale-105 active:scale-95"
+          onClick={() => navigate(`/booking?type=trek&id=${trek.id}`)}
+        >
+          Book Trek
+        </Button>
       </CardFooter>
     </Card>
   );

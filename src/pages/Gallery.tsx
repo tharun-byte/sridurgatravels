@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
+import { PageBanner } from '@/components/layout/PageBanner';
 import { CTASection } from '@/components/home/CTASection';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -70,20 +71,12 @@ const Gallery = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative h-[300px] flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${galleryBanner})` }}
-        >
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-        <div className="relative z-10 text-center">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Our Gallery</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
-            Explore our fleet and travel experiences
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        pageSlug="gallery"
+        defaultImage={galleryBanner}
+        defaultTitle="Our Gallery"
+        defaultSubtitle="Explore our fleet and travel experiences"
+      />
 
       {/* Gallery Grid */}
       <section className="section-padding">

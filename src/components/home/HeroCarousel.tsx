@@ -6,15 +6,13 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-interface BannerImage {
+interface PageBanner {
   id: string;
-  position: number;
-  image_url: string;
+  page_slug: string;
+  page_name: string;
+  image_url: string | null;
   title: string | null;
   subtitle: string | null;
-  cta_text: string | null;
-  cta_link: string | null;
-  is_active: boolean;
 }
 
 const defaultSlides = [
@@ -47,10 +45,10 @@ const defaultSlides = [
   },
 ];
 
-const slideIcons = [
-  { icon: Bus, label: 'Bus Rentals' },
-  { icon: Mountain, label: 'Trekking' },
-  { icon: Car, label: 'Car Rentals' },
+const slideConfig = [
+  { slug: 'home-1', icon: Bus, label: 'Bus Rentals', cta: 'Reserve Your Bus Today', href: '/rentals' },
+  { slug: 'home-2', icon: Mountain, label: 'Trekking', cta: 'Book Your Trek Now', href: '/trekking' },
+  { slug: 'home-3', icon: Car, label: 'Car Rentals', cta: 'Explore Car Rentals', href: '/rentals' },
 ];
 
 export function HeroCarousel() {
@@ -61,28 +59,31 @@ export function HeroCarousel() {
     queryKey: ['home-banners'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('banner_images')
+        .from('page_banners')
         .select('*')
-        .eq('is_active', true)
-        .order('position');
+        .in('page_slug', ['home-1', 'home-2', 'home-3'])
+        .order('page_slug');
       
       if (error) throw error;
-      return data as BannerImage[];
+      return data as PageBanner[];
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   // Convert database banners to slides format, fallback to defaults
   const slides = bannerData && bannerData.length > 0
-    ? bannerData.map((banner, index) => ({
-        image: banner.image_url,
-        title: banner.title || defaultSlides[index]?.title || '',
-        subtitle: banner.subtitle || defaultSlides[index]?.subtitle || '',
-        cta: banner.cta_text || defaultSlides[index]?.cta || 'Learn More',
-        href: banner.cta_link || defaultSlides[index]?.href || '/',
-        icon: slideIcons[index]?.icon || Bus,
-        label: slideIcons[index]?.label || 'Explore',
-      }))
+    ? bannerData.map((banner, index) => {
+        const config = slideConfig[index] || slideConfig[0];
+        return {
+          image: banner.image_url || defaultSlides[index]?.image || '/images/hero/hero-bus.jpg',
+          title: banner.title || defaultSlides[index]?.title || '',
+          subtitle: banner.subtitle || defaultSlides[index]?.subtitle || '',
+          cta: config.cta,
+          href: config.href,
+          icon: config.icon,
+          label: config.label,
+        };
+      })
     : defaultSlides;
 
   useEffect(() => {

@@ -6,12 +6,14 @@ import {
   Calendar,
   Mail,
   Image,
+  Images,
   Users,
   Settings,
   LogOut,
   Bus,
   ChevronLeft,
   Star,
+  Palette,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
@@ -34,12 +36,12 @@ import {
 
 const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
-  { title: 'Banners', url: '/admin/banners', icon: Image },
+  { title: 'Banners', url: '/admin/banners', icon: Palette },
   { title: 'Vehicles', url: '/admin/vehicles', icon: Car },
   { title: 'Treks', url: '/admin/treks', icon: Mountain },
   { title: 'Bookings', url: '/admin/bookings', icon: Calendar },
   { title: 'Messages', url: '/admin/messages', icon: Mail },
-  { title: 'Gallery', url: '/admin/gallery', icon: Image },
+  { title: 'Gallery', url: '/admin/gallery', icon: Images },
   { title: 'Testimonials', url: '/admin/testimonials', icon: Star },
   { title: 'Admin Users', url: '/admin/users', icon: Users },
   { title: 'Settings', url: '/admin/settings', icon: Settings },

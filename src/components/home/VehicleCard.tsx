@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Users, IndianRupee, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -8,9 +8,11 @@ import type { Vehicle, VehicleType } from '@/types/database';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
+  showBookButton?: boolean;
 }
 
-export function VehicleCard({ vehicle }: VehicleCardProps) {
+export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProps) {
+  const navigate = useNavigate();
   const primaryImage = vehicle.images?.find(img => img.is_primary)?.url || 
     vehicle.images?.[0]?.url || 
     '/placeholder.svg';
@@ -75,11 +77,12 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
             View Details
           </Button>
         </Link>
-        <Link to={`/contact?vehicle=${vehicle.id}`} className="flex-1">
-          <Button className="w-full bg-primary text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95">
-            Book Now
-          </Button>
-        </Link>
+        <Button 
+          className="flex-1 bg-primary text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
+          onClick={() => navigate(`/booking?type=vehicle&id=${vehicle.id}`)}
+        >
+          Book Now
+        </Button>
       </CardFooter>
     </Card>
   );
