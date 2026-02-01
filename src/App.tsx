@@ -31,6 +31,7 @@ import MessageList from "./pages/admin/messages/MessageList";
 import GalleryManager from "./pages/admin/gallery/GalleryManager";
 import SettingsPage from "./pages/admin/settings/SettingsPage";
 import TestimonialList from "./pages/admin/testimonials/TestimonialList";
+import BannerManager from "./pages/admin/banners/BannerManager";
 import { AdminLayout } from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+              <Route path="banners" element={<BannerManager />} />
               <Route path="vehicles" element={<VehicleList />} />
               <Route path="vehicles/new" element={<VehicleForm />} />
               <Route path="vehicles/:id" element={<VehicleForm />} />
