@@ -9,7 +9,9 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Rentals from "./pages/Rentals";
+import VehicleDetail from "./pages/VehicleDetail";
 import Trekking from "./pages/Trekking";
+import TrekDetail from "./pages/TrekDetail";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Booking from "./pages/Booking";
@@ -49,7 +51,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/rentals" element={<Rentals />} />
+            <Route path="/rentals/:id" element={<VehicleDetail />} />
             <Route path="/trekking" element={<Trekking />} />
+            <Route path="/trekking/:id" element={<TrekDetail />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
