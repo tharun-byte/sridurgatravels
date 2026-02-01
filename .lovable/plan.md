@@ -1,224 +1,185 @@
 
-# Sri Durga Travels - Logo, Banner, and Image Enhancement Plan
+
+# Fix Vehicle/Trek Images and Broken Buttons
 
 ## Overview
-This plan addresses all the requested improvements including: downloading the proper white logo, removing the company name text from header/footer, making the logo bigger, implementing admin-managed banner images for the home page, and ensuring all vehicle/trek images are properly linked.
+This plan addresses three critical issues:
+1. "View Details" and "Book Now" buttons not working due to HTML nesting issues
+2. Vehicle images not displaying (database has empty `vehicle_images` arrays)
+3. Trek images need to be sourced from the internet
 
 ---
 
-## Phase 1: Logo Updates
+## Phase 1: Fix Broken Buttons (Link/Button Nesting)
 
-### 1.1 Download and Replace Logo
-- Download the white logo from `https://sridurgatravels.com/assets/version-2/img/logo-white.png`
-- Replace the current `src/assets/logo-white.png` with the downloaded version (transparent background)
-
-### 1.2 Update Header Component
-**File:** `src/components/layout/Header.tsx`
-
-Changes:
-- Remove the "Sri Durga Travels" text span completely
-- Increase logo height from `h-12` to `h-16` (or larger)
-- Keep the logo as the only branding element in the navbar
-
-```text
-Before:
-  <Link to="/" className="flex items-center gap-3">
-    <img src={logoWhite} alt="Sri Durga Travels Logo" className="h-12 w-auto" />
-    <span className="font-heading font-bold text-xl text-foreground hidden sm:inline">
-      {COMPANY_INFO.name}
-    </span>
-  </Link>
-
-After:
-  <Link to="/" className="flex items-center">
-    <img src={logoWhite} alt="Sri Durga Travels Logo" className="h-16 md:h-20 w-auto" />
-  </Link>
+### Root Cause
+The current implementation has a `<Link>` wrapping a `<Button>`:
+```jsx
+<Link to="/rentals/...">
+  <Button>View Details</Button>
+</Link>
 ```
 
-### 1.3 Update Footer Component
-**File:** `src/components/layout/Footer.tsx`
+This creates invalid HTML (interactive element inside interactive element) and React warns about function components not receiving refs properly.
 
-Changes:
-- Remove the "Sri Durga Travels" text span from the logo section
-- Increase logo height from `h-14` to `h-20`
-- Keep background color as `#0a1628` (dark navy - matches well with white logo)
+### Solution
+Use the shadcn Button's `asChild` prop with Link as the child. This merges the Link and Button into a single clickable element.
 
----
+**File: `src/components/home/VehicleCard.tsx`**
+```jsx
+// Before
+<Link to={`/rentals/${vehicle.id}`} className="flex-1">
+  <Button variant="outline" className="w-full">View Details</Button>
+</Link>
 
-## Phase 2: Home Page Banner Management (Admin Feature)
-
-### 2.1 Create Banner Settings Table
-Create a new database migration for storing banner images:
-
-```sql
-CREATE TABLE IF NOT EXISTS banner_images (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  position INTEGER NOT NULL UNIQUE CHECK (position >= 1 AND position <= 3),
-  image_url TEXT NOT NULL,
-  title TEXT,
-  subtitle TEXT,
-  cta_text TEXT,
-  cta_link TEXT,
-  is_active BOOLEAN DEFAULT true,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Seed with default banners
-INSERT INTO banner_images (position, image_url, title, subtitle, cta_text, cta_link)
-VALUES 
-  (1, '/images/hero/hero-bus.jpg', 'Book Regular & AC Buses Online', 'Comfortable travel for groups of all sizes with experienced drivers', 'Reserve Your Bus Today', '/rentals'),
-  (2, '/images/hero/hero-trekking.jpg', 'Exciting Trekking Trips & Packages', 'Adventure awaits! Explore the Western Ghats with expert guides', 'Book Your Trek Now', '/trekking'),
-  (3, '/images/hero/hero-cars.jpg', 'Affordable 5-Seater Car Rentals', 'Premium cars for family trips, airport transfers and outstation journeys', 'Explore Car Rentals', '/rentals');
-
--- RLS Policies
-ALTER TABLE banner_images ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Banners are publicly viewable" ON banner_images FOR SELECT USING (true);
-CREATE POLICY "Managers can update banners" ON banner_images FOR UPDATE USING (is_manager());
+// After
+<Button variant="outline" className="w-full flex-1" asChild>
+  <Link to={`/rentals/${vehicle.id}`}>View Details</Link>
+</Button>
 ```
 
-### 2.2 Create Banner Management Page
-**New File:** `src/pages/admin/banners/BannerManager.tsx`
-
-Features:
-- Display all 3 banner slots in a grid
-- Each slot shows current image preview
-- Upload button to replace image (uploads to Supabase Storage)
-- Edit title, subtitle, CTA text
-- Cannot add new banners (fixed 3 slots)
-- Cannot delete banners (only replace)
-
-### 2.3 Update Hero Carousel to Use Database
-**File:** `src/components/home/HeroCarousel.tsx`
-
-Changes:
-- Fetch banner data from `banner_images` table
-- Fall back to static slides if database is empty
-- Keep existing animation/styling logic
-
-### 2.4 Add Route for Banner Manager
-**File:** `src/App.tsx`
-
-Add route: `/admin/banners` pointing to `BannerManager.tsx`
-
-### 2.5 Update Admin Sidebar
-**File:** `src/components/admin/AdminSidebar.tsx`
-
-Add "Banners" link to sidebar navigation
+**File: `src/components/home/TrekCard.tsx`**
+Same pattern for the "View Details" button.
 
 ---
 
-## Phase 3: Vehicle Image Updates
+## Phase 2: Add Vehicle Images to Database
 
-### 3.1 Download Vehicle Images
-All 14 vehicle images have already been downloaded to `public/images/vehicles/`. The mapping is:
+### Current State
+The network responses show `vehicle_images: []` for all vehicles. The images exist in `public/images/vehicles/` but aren't linked in the database.
 
-| Vehicle Name | Image File |
-|-------------|-----------|
+### Solution
+Insert records into the `vehicle_images` table mapping each vehicle to its correct image. This requires a database migration to insert the image records.
+
+**Vehicle-to-Image Mapping:**
+
+| Vehicle Name | Image Path |
+|-------------|------------|
 | Kia Carens | `/images/vehicles/kia-carens.avif` |
 | Toyota Etios | `/images/vehicles/toyota-etios.avif` |
 | Innova Crysta | `/images/vehicles/innova-crysta.avif` |
 | Innova Hycross | `/images/vehicles/innova-hycross.avif` |
-| AC TT 13 Seater | `/images/vehicles/tt-13-seater.jpg` |
-| Urbania Luxury 16 | `/images/vehicles/urbania-luxury.jpg` |
+| AC TT 13 Seater (Luxury) | `/images/vehicles/tt-13-seater.jpg` |
+| Urbania Luxury 16 Seater | `/images/vehicles/urbania-luxury.jpg` |
 | 21 Seater Mini-bus | `/images/vehicles/21-seater.jpeg` |
 | 25 Seater Mini-bus | `/images/vehicles/25-seater.jpeg` |
 | 33 Seater Coach | `/images/vehicles/33-seater.jpeg` |
 | 49 Seater (3+2) | `/images/vehicles/49-seater.jpeg` |
-| 40 Seater (2+2) | `/images/vehicles/40-seater.jpeg` |
-| Benz 45 Seater | `/images/vehicles/benz-45.jpeg` |
-| Volvo 45 Seater | `/images/vehicles/volvo-45-2x2.jpeg` |
-| Volvo 49 Seater | `/images/vehicles/volvo-49.jpg` |
+| 40 Seater (2+2) Luxury | `/images/vehicles/40-seater.jpeg` |
+| Benz 45 Seater (2+2) | `/images/vehicles/benz-45.jpeg` |
+| Volvo AC 45 Seater | `/images/vehicles/volvo-45-2x2.jpeg` |
+| Volvo AC 49 Seater | `/images/vehicles/volvo-49.jpg` |
 
-### 3.2 Update Constants File
-**File:** `src/lib/constants.ts`
-
-Update `DEFAULT_VEHICLES` array with correct image paths for each vehicle.
-
-### 3.3 Insert Vehicle Images into Database
-Run a migration/update to add `vehicle_images` records for all vehicles in the database with the correct image URLs.
-
----
-
-## Phase 4: Trek Image Updates
-
-### 4.1 Trek Image Files
-Trek images are already in `public/images/treks/`. The mapping is:
-
-| Trek Name | Image File |
-|----------|-----------|
-| Kudremukh Trek | `/images/treks/kudremukh-trek.jpg` |
-| Nethravathi Trek | `/images/treks/nethravathi-trek.jpg` |
-| Gokarna Beach Trek | `/images/treks/gokarna-beach.jpg` |
-| Kodaikanal Tour | `/images/treks/kodaikanal-tour.jpg` |
-| Coorg Tour | `/images/treks/coorg-tour.jpg` |
-| Ooty Tour | `/images/treks/ooty-tour.jpg` |
-| Chikkamagaluru Tour | `/images/treks/chikmagalur-tour.jpg` |
-| Wayanad Tour | `/images/treks/wayanad-tour.jpg` |
-| Pondicherry Tour | `/images/treks/pondicherry-tour.jpg` |
-| Kurinjal Trek | `/images/treks/kurinjal-trek.jpg` |
-| Dudhsagar Trek | `/images/treks/dudhsagar-falls.jpg` |
-| Tadiandamol Trek | `/images/treks/tadiandamol-trek.jpg` |
-| Gangadikal Trek | `/images/treks/gangadikal-trek.jpg` |
-| Kumara Parvatha Trek | `/images/treks/kumara-parvatha-trek.jpg` |
-| Kodachadri Trek | `/images/treks/kodachadri-trek.jpg` |
-| Bandaje Falls Trek | `/images/treks/bandaje-falls.jpg` |
-
-### 4.2 Update Constants File
-**File:** `src/lib/constants.ts`
-
-Update `DEFAULT_TREKS` array with correct image paths for each trek.
-
-### 4.3 Insert Trek Images into Database
-Run a migration/update to add `trek_images` records for all treks in the database.
+### Database Migration
+```sql
+-- Insert vehicle images by matching vehicle names
+INSERT INTO vehicle_images (vehicle_id, url, is_primary, display_order)
+SELECT v.id, 
+  CASE 
+    WHEN v.name ILIKE '%Kia Carens%' THEN '/images/vehicles/kia-carens.avif'
+    WHEN v.name ILIKE '%Etios%' THEN '/images/vehicles/toyota-etios.avif'
+    WHEN v.name ILIKE '%Crysta%' THEN '/images/vehicles/innova-crysta.avif'
+    WHEN v.name ILIKE '%Hycross%' THEN '/images/vehicles/innova-hycross.avif'
+    WHEN v.name ILIKE '%TT 13%' THEN '/images/vehicles/tt-13-seater.jpg'
+    WHEN v.name ILIKE '%Urbania%' THEN '/images/vehicles/urbania-luxury.jpg'
+    WHEN v.name ILIKE '%21 Seater%' THEN '/images/vehicles/21-seater.jpeg'
+    WHEN v.name ILIKE '%25 Seater%' THEN '/images/vehicles/25-seater.jpeg'
+    WHEN v.name ILIKE '%33 Seater%' THEN '/images/vehicles/33-seater.jpeg'
+    WHEN v.name ILIKE '%49 Seater%' AND v.name ILIKE '%3+2%' THEN '/images/vehicles/49-seater.jpeg'
+    WHEN v.name ILIKE '%40 Seater%' THEN '/images/vehicles/40-seater.jpeg'
+    WHEN v.name ILIKE '%Benz%' THEN '/images/vehicles/benz-45.jpeg'
+    WHEN v.name ILIKE '%Volvo%' AND v.capacity = 45 THEN '/images/vehicles/volvo-45-2x2.jpeg'
+    WHEN v.name ILIKE '%Volvo%' AND v.capacity = 49 THEN '/images/vehicles/volvo-49.jpg'
+    ELSE '/placeholder.svg'
+  END,
+  true,
+  0
+FROM vehicles v
+WHERE NOT EXISTS (
+  SELECT 1 FROM vehicle_images vi WHERE vi.vehicle_id = v.id
+);
+```
 
 ---
 
-## Phase 5: Ensure Data Consistency
+## Phase 3: Add Trek Images to Database
 
-### 5.1 Verify Vehicle Data in Database
-Ensure all 14 vehicles exist in the `vehicles` table with correct:
-- Pricing information
-- Features
-- Image references in `vehicle_images` table
+### Solution
+Insert records into `trek_images` table with high-quality internet URLs from Unsplash (stable, free to use).
 
-### 5.2 Verify Trek Data in Database
-Ensure all 16 treks exist in the `treks` table with correct:
-- Pricing information
-- Highlights
-- Image references in `trek_images` table
+**Trek-to-Image Mapping (using Unsplash):**
+
+| Trek Name | Image URL (Unsplash) |
+|----------|---------------------|
+| Kudremukh Trek | `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800` |
+| Nethravathi Trek | `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800` |
+| Gokarna Beach Trek | `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800` |
+| Kodaikanal Tour | `https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800` |
+| Coorg Tour | `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800` |
+| Ooty Tour | `https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800` |
+| Chikmagalur Tour | `https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800` |
+| Wayanad Tour | `https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800` |
+| Pondicherry Tour | `https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800` |
+| Kurinjal Trek | `https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800` |
+| Dudhsagar Trek | `https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800` |
+| Tadiandamol Trek | `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800` |
+| Gangadikal Trek | `https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800` |
+| Kumara Parvatha Trek | `https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800` |
+| Kodachadri Trek | `https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800` |
+| Bandaje Falls Trek | `https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800` |
+
+### Database Migration
+```sql
+-- Insert trek images by matching trek names
+INSERT INTO trek_images (trek_id, url, is_primary, display_order)
+SELECT t.id, 
+  CASE 
+    WHEN t.name ILIKE '%Kudremukh%' THEN 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'
+    WHEN t.name ILIKE '%Nethravathi%' THEN 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'
+    -- ... (all mappings)
+  END,
+  true,
+  0
+FROM treks t
+WHERE NOT EXISTS (
+  SELECT 1 FROM trek_images ti WHERE ti.trek_id = t.id
+);
+```
 
 ---
 
-## Technical Details
+## Phase 4: Update DEFAULT_VEHICLES and DEFAULT_TREKS in Constants
 
-### Files to Modify
-1. `src/assets/logo-white.png` - Replace with downloaded logo
-2. `src/components/layout/Header.tsx` - Remove text, increase logo size
-3. `src/components/layout/Footer.tsx` - Remove text, increase logo size
-4. `src/components/home/HeroCarousel.tsx` - Fetch banners from database
-5. `src/lib/constants.ts` - Update image paths for vehicles and treks
-6. `src/App.tsx` - Add banner manager route
-7. `src/components/admin/AdminSidebar.tsx` - Add banners link
+Update `src/lib/constants.ts` to use correct image paths for fallback data (when database is empty).
 
-### New Files to Create
-1. `src/pages/admin/banners/BannerManager.tsx` - Banner editing interface
+---
 
-### Database Changes
-1. Create `banner_images` table with 3 fixed slots
-2. Update `vehicle_images` with correct URLs
-3. Update `trek_images` with correct URLs
+## Files to Modify
 
-### Storage Bucket
-- Use existing storage bucket or create `banners` bucket for admin-uploaded banner images
+1. **`src/components/home/VehicleCard.tsx`**
+   - Fix Button/Link nesting using `asChild` prop
+   - Ensure "View Details" and "Book Now" both work
+
+2. **`src/components/home/TrekCard.tsx`**
+   - Fix Button/Link nesting using `asChild` prop
+   - Ensure "View Details" and "Book Trek" both work
+
+3. **`src/lib/constants.ts`**
+   - Update DEFAULT_VEHICLES with correct local image paths
+   - Update DEFAULT_TREKS with Unsplash image URLs
+
+4. **Database Migration**
+   - Insert vehicle_images records for all vehicles
+   - Insert trek_images records for all treks
 
 ---
 
 ## Summary
 
-This implementation will:
-1. Display only the logo (larger, without text) in header and footer
-2. Allow admins to edit the 3 existing home page banners (no add/delete)
-3. Ensure all vehicles have their specific images from the provided URLs
-4. Ensure all treks have relevant images
-5. Keep all admin dashboard functionality working without bugs
+After implementation:
+- "View Details" buttons will navigate to `/rentals/:id` and `/trekking/:id`
+- "Book Now" buttons will navigate to `/booking?type=...&id=...`
+- All vehicle cards will display the correct downloaded images
+- All trek cards will display high-quality Unsplash images
+- Admin dashboard will show the same images (data comes from database)
+
