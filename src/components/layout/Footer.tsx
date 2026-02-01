@@ -12,13 +12,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <img 
                 src={logoWhite} 
                 alt="Sri Durga Travels Logo" 
-                className="h-14 w-auto"
+                className="h-20 w-auto"
               />
-              <span className="font-heading font-bold text-xl text-white">{COMPANY_INFO.name}</span>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
               {COMPANY_INFO.tagline}. With over {COMPANY_INFO.experience} years of experience, 

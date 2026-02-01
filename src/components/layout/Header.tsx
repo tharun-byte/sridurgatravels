@@ -80,15 +80,12 @@ export function Header() {
       <nav className="bg-background border-b shadow-sm">
         <div className="container flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center">
             <img 
               src={logoWhite} 
               alt="Sri Durga Travels Logo" 
-              className="h-12 w-auto"
+              className="h-16 md:h-20 w-auto"
             />
-            <span className="font-heading font-bold text-xl text-foreground hidden sm:inline">
-              {COMPANY_INFO.name}
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
