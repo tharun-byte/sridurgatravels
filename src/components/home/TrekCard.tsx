@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Clock, Mountain, IndianRupee, MapPin, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -19,7 +19,6 @@ const difficultyColors: Record<TrekDifficulty, string> = {
 };
 
 export function TrekCard({ trek, showBookButton = false }: TrekCardProps) {
-  const navigate = useNavigate();
   const primaryImage = trek.images?.find(img => img.is_primary)?.url || 
     trek.images?.[0]?.url || 
     '/images/hero/hero-trekking.jpg';
@@ -71,16 +70,14 @@ export function TrekCard({ trek, showBookButton = false }: TrekCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 transition-colors duration-300 group-hover:bg-muted/30">
-        <Link to={`/trekking/${trek.id}`} className="flex-1">
-          <Button variant="outline" className="w-full transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-md hover:shadow-primary/20 active:scale-95">
-            View Details
-          </Button>
-        </Link>
+        <Button variant="outline" className="flex-1 w-full transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-md hover:shadow-primary/20 active:scale-95" asChild>
+          <Link to={`/trekking/${trek.id}`}>View Details</Link>
+        </Button>
         <Button 
           className="flex-1 bg-success text-success-foreground hover:bg-success/90 transition-all duration-300 hover:shadow-lg hover:shadow-success/40 hover:scale-105 active:scale-95"
-          onClick={() => navigate(`/booking?type=trek&id=${trek.id}`)}
+          asChild
         >
-          Book Trek
+          <Link to={`/booking?type=trek&id=${trek.id}`}>Book Trek</Link>
         </Button>
       </CardFooter>
     </Card>

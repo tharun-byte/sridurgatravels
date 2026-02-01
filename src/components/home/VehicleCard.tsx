@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Users, IndianRupee, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -12,7 +12,6 @@ interface VehicleCardProps {
 }
 
 export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProps) {
-  const navigate = useNavigate();
   const primaryImage = vehicle.images?.find(img => img.is_primary)?.url || 
     vehicle.images?.[0]?.url || 
     '/placeholder.svg';
@@ -72,16 +71,14 @@ export function VehicleCard({ vehicle, showBookButton = false }: VehicleCardProp
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 transition-colors duration-300 group-hover:bg-muted/30">
-        <Link to={`/rentals/${vehicle.id}`} className="flex-1">
-          <Button variant="outline" className="w-full transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-md hover:shadow-primary/20 active:scale-95">
-            View Details
-          </Button>
-        </Link>
+        <Button variant="outline" className="flex-1 w-full transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-md hover:shadow-primary/20 active:scale-95" asChild>
+          <Link to={`/rentals/${vehicle.id}`}>View Details</Link>
+        </Button>
         <Button 
           className="flex-1 bg-primary text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
-          onClick={() => navigate(`/booking?type=vehicle&id=${vehicle.id}`)}
+          asChild
         >
-          Book Now
+          <Link to={`/booking?type=vehicle&id=${vehicle.id}`}>Book Now</Link>
         </Button>
       </CardFooter>
     </Card>
