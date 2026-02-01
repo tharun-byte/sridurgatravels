@@ -1,4 +1,5 @@
 import { Layout } from '@/components/layout/Layout';
+import { PageBanner } from '@/components/layout/PageBanner';
 import { COMPANY_INFO, WHY_CHOOSE_US } from '@/lib/constants';
 import { StatsSection } from '@/components/home/StatsSection';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
@@ -17,20 +18,13 @@ const About = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative h-[400px] flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${aboutBanner})` }}
-        >
-          <div className="absolute inset-0 bg-black/70" />
-        </div>
-        <div className="relative z-10 text-center">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">About Us</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
-            {COMPANY_INFO.experience} years of excellence in travel and transport services
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        pageSlug="about"
+        defaultImage={aboutBanner}
+        defaultTitle="About Us"
+        defaultSubtitle={`${COMPANY_INFO.experience} years of excellence in travel and transport services`}
+        height="lg"
+      />
 
       {/* Company Story */}
       <section className="section-padding">
@@ -64,7 +58,7 @@ const About = () => {
                 alt="Sri Durga Travels Fleet"
                 className="rounded-2xl shadow-xl w-full h-[400px] object-cover"
               />
-              <div className="absolute -bottom-6 -left-6 bg-primary text-white p-6 rounded-xl shadow-lg">
+              <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-xl shadow-lg">
                 <p className="text-4xl font-bold">{COMPANY_INFO.experience}</p>
                 <p className="text-sm">Years of Excellence</p>
               </div>

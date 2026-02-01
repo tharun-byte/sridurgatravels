@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      banner_images: {
-        Row: {
-          cta_link: string | null
-          cta_text: string | null
-          id: string
-          image_url: string
-          is_active: boolean | null
-          position: number
-          subtitle: string | null
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          cta_link?: string | null
-          cta_text?: string | null
-          id?: string
-          image_url: string
-          is_active?: boolean | null
-          position: number
-          subtitle?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          cta_link?: string | null
-          cta_text?: string | null
-          id?: string
-          image_url?: string
-          is_active?: boolean | null
-          position?: number
-          subtitle?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       bookings: {
         Row: {
           admin_notes: string | null
@@ -225,6 +189,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      page_banners: {
+        Row: {
+          id: string
+          image_url: string | null
+          page_name: string
+          page_slug: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          image_url?: string | null
+          page_name: string
+          page_slug: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          image_url?: string | null
+          page_name?: string
+          page_slug?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

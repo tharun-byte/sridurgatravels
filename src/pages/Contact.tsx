@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { PageBanner } from '@/components/layout/PageBanner';
 import { COMPANY_INFO } from '@/lib/constants';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -108,20 +109,12 @@ const Contact = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative h-[300px] flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${contactBanner})` }}
-        >
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-        <div className="relative z-10 text-center">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Contact Us</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto px-4 drop-shadow-md">
-            Get in touch for bookings, inquiries, or any questions
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        pageSlug="contact"
+        defaultImage={contactBanner}
+        defaultTitle="Contact Us"
+        defaultSubtitle="Get in touch for bookings, inquiries, or any questions"
+      />
 
       {/* Contact Section */}
       <section className="section-padding">

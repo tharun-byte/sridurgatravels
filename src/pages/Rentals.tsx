@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { PageBanner } from '@/components/layout/PageBanner';
 import { VehicleCard } from '@/components/home/VehicleCard';
 import { CTASection } from '@/components/home/CTASection';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_VEHICLES, VEHICLE_TYPES } from '@/lib/constants';
@@ -60,20 +59,13 @@ const Rentals = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative h-[400px] flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${rentalsBanner})` }}
-        >
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-        <div className="relative z-10 text-center px-4">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">Cars & Bus Rentals</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
-            Choose from our wide range of well-maintained vehicles for any occasion
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        pageSlug="rentals"
+        defaultImage={rentalsBanner}
+        defaultTitle="Cars & Bus Rentals"
+        defaultSubtitle="Choose from our wide range of well-maintained vehicles for any occasion"
+        height="lg"
+      />
 
       {/* Filters & Vehicles */}
       <section className="section-padding">
@@ -109,7 +101,7 @@ const Rentals = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredVehicles.map((vehicle) => (
-                    <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                    <VehicleCard key={vehicle.id} vehicle={vehicle} showBookButton />
                   ))}
                 </div>
               )}

@@ -12,6 +12,7 @@ import Rentals from "./pages/Rentals";
 import Trekking from "./pages/Trekking";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
+import Booking from "./pages/Booking";
 import NotFound from "./pages/NotFound";
 
 // User pages
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/trekking" element={<Trekking />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/booking" element={<Booking />} />
             
             {/* User Routes */}
             <Route path="/login" element={<UserLogin />} />
