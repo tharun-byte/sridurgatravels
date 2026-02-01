@@ -83,7 +83,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: null,
     outstation_allowance: "300 km/day",
     driver_bata: 700,
-    image: "/images/vehicles/urbania-16.jpg",
+    image: "/images/vehicles/urbania-luxury.jpg",
   },
   {
     name: "21 Seater Mini-bus",
@@ -97,7 +97,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 13000,
     outstation_allowance: null,
     driver_bata: 800,
-    image: "/images/vehicles/minibus-21.jpg",
+    image: "/images/vehicles/21-seater.jpeg",
   },
   {
     name: "25 Seater Mini-bus",
@@ -111,7 +111,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 14000,
     outstation_allowance: null,
     driver_bata: 800,
-    image: "/images/vehicles/minibus-21.jpg",
+    image: "/images/vehicles/25-seater.jpeg",
   },
   {
     name: "33 Seater Coach",
@@ -125,7 +125,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 16500,
     outstation_allowance: null,
     driver_bata: 900,
-    image: "/images/vehicles/coach-33.jpg",
+    image: "/images/vehicles/33-seater.jpeg",
   },
   {
     name: "49 Seater (3+2)",
@@ -139,7 +139,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 17000,
     outstation_allowance: "400 km/day",
     driver_bata: 900,
-    image: "/images/vehicles/volvo-49.jpg",
+    image: "/images/vehicles/49-seater.jpeg",
   },
   {
     name: "40 Seater (2+2) Luxury",
@@ -153,7 +153,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 27000,
     outstation_allowance: null,
     driver_bata: 1250,
-    image: "/images/vehicles/luxury-40.jpg",
+    image: "/images/vehicles/40-seater.jpeg",
   },
   {
     name: "Benz 45 Seater (2+2)",
@@ -167,7 +167,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 28000,
     outstation_allowance: null,
     driver_bata: 1300,
-    image: "/images/vehicles/benz-45.jpg",
+    image: "/images/vehicles/benz-45.jpeg",
   },
   {
     name: "Volvo AC 45/49 Seater",
@@ -181,7 +181,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 17000,
     outstation_allowance: "400 km/day",
     driver_bata: 900,
-    image: "/images/vehicles/volvo-45.jpg",
+    image: "/images/vehicles/volvo-45-2x2.jpeg",
   },
   // Cars
   {
@@ -196,7 +196,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 3500,
     outstation_allowance: "Outstation ₹16/km",
     driver_bata: null,
-    image: "/images/vehicles/tt-13-seater.jpg",
+    image: "/images/vehicles/kia-carens.avif",
   },
   {
     name: "Toyota Etios",
@@ -210,7 +210,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 2200,
     outstation_allowance: "200 km/day",
     driver_bata: 550,
-    image: "/images/vehicles/tt-13-seater.jpg",
+    image: "/images/vehicles/toyota-etios.avif",
   },
   {
     name: "Innova Crysta",
@@ -224,7 +224,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 3500,
     outstation_allowance: "250 km/day",
     driver_bata: 600,
-    image: "/images/vehicles/tt-13-seater.jpg",
+    image: "/images/vehicles/innova-crysta.avif",
   },
   {
     name: "Innova Hycross",
@@ -238,7 +238,7 @@ export const DEFAULT_VEHICLES = [
     full_day_price: 4000,
     outstation_allowance: "300 km/day",
     driver_bata: 650,
-    image: "/images/vehicles/tt-13-seater.jpg",
+    image: "/images/vehicles/innova-hycross.avif",
   },
 ];
 
@@ -254,7 +254,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3899,
     description: "Trek to the horse-face peak through lush shola forests, streams and rolling hills. Experience stunning panoramic views and wildlife sightings.",
     highlights: ["Stunning panoramic views", "Wildlife sightings", "Shola forests", "Samse Tea Estate visit", "Belur Temple optional visit"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/kudremukh-trek.jpg",
   },
   {
     name: "Nethravathi Trek",
@@ -266,7 +266,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3899,
     description: "Scenic trek leading to Nethravathi Peak with views of the Kudremukh range. Pass through shola forests, rolling grasslands and hidden streams.",
     highlights: ["Shola forests", "Rolling grasslands", "Hidden streams", "Panoramic vistas", "Kudremukh range views"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/nethravathi-trek.jpg",
   },
   {
     name: "Gokarna Beach Trek",
@@ -278,7 +278,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Coastal trek visiting Paradise, Half Moon, Om and Kudle beaches with camping near the shore.",
     highlights: ["Beach camping", "Campfire & star-gazing", "Paradise Beach", "Half Moon Beach", "Om Beach"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/gokarna-beach.jpg",
   },
   {
     name: "Kodaikanal Tour",
@@ -290,7 +290,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 5499,
     description: "Visit Moir Point, Pine Forest, Pillar Rocks and Bryant Park. Includes boating and strawberry farm visit.",
     highlights: ["Boating", "Pine Forest walk", "Pillar Rocks", "Strawberry farm", "Bryant Park"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/kodaikanal-tour.jpg",
   },
   {
     name: "Coorg Tour",
@@ -302,7 +302,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 4499,
     description: "Explore Raja's Seat, Mandalpatti, Abbey Falls and coffee plantations with jeep safari and campfire.",
     highlights: ["Mandalpatti Jeep Safari", "Abbey Falls", "Coffee plantation walk", "Campfire", "Raja's Seat"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/coorg-tour.jpg",
   },
   {
     name: "Ooty Tour",
@@ -314,7 +314,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 5499,
     description: "Visit Pykara Lake & Falls, Pine Forest, Doddabetta Peak and enjoy the famous Ooty Toy Train.",
     highlights: ["Ooty Toy Train", "Pykara Lake", "Doddabetta Peak", "Pine Forest", "Botanical Garden"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/ooty-tour.jpg",
   },
   {
     name: "Chikkamagaluru Tour",
@@ -326,7 +326,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 4499,
     description: "Visit Mullayanagiri sunrise point, Hebbe Falls, coffee estates and Baba Budangiri.",
     highlights: ["Mullayanagiri sunrise", "Hebbe Falls", "Coffee estates", "Baba Budangiri", "Homestay experience"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/chikmagalur-tour.jpg",
   },
   {
     name: "Wayanad Tour",
@@ -338,7 +338,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 5499,
     description: "Off-road jeep safari to sunset viewpoint, glass bridge, Edakkal Caves and lush tea estates.",
     highlights: ["Jeep Safari", "Glass Bridge", "Edakkal Caves", "Tea Estates", "Campfire"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/wayanad-tour.jpg",
   },
   {
     name: "Pondicherry Tour",
@@ -350,7 +350,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 5299,
     description: "Heritage walks, beaches, Auroville, Promenade and French Quarter exploration.",
     highlights: ["French Quarter", "Auroville", "Beach walks", "Promenade", "Heritage sites"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/pondicherry-tour.jpg",
   },
   {
     name: "Kurinjal Trek",
@@ -362,7 +362,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Moderate trek to Kurinjal peak through forests and meadows in Kudremukh National Park.",
     highlights: ["Forest trails", "Meadow views", "Peak sunrise", "Wildlife sightings", "Shola grasslands"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/kurinjal-trek.jpg",
   },
   {
     name: "Dudhsagar Trek & Dandeli Rafting",
@@ -374,7 +374,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 4999,
     description: "Trek to the spectacular 300m Dudhsagar Falls combined with white-water rafting in Dandeli.",
     highlights: ["Dudhsagar Falls", "White-water rafting", "Jungle trek", "Campfire", "Adventure combo"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/dudhsagar-falls.jpg",
   },
   {
     name: "Tadiandamol Trek",
@@ -386,7 +386,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Trek to the highest peak in Coorg district through shola forests and grasslands.",
     highlights: ["Highest peak in Coorg", "Shola forests", "Grassland views", "Sunrise point", "Coffee plantation"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/tadiandamol-trek.jpg",
   },
   {
     name: "Gangadikal Trek",
@@ -398,7 +398,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Trek through tropical forest and shola grasslands to Gangadikal Peak with panoramic views.",
     highlights: ["Sunrise from peak", "Panoramic views", "Biodiversity", "Rolling hills", "Shola grasslands"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/gangadikal-trek.jpg",
   },
   {
     name: "Kumara Parvatha Trek",
@@ -410,7 +410,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Challenging trek to the 4th highest peak in Karnataka via Somvarpet through shola forests.",
     highlights: ["4th highest peak in Karnataka", "Shola forests", "Rocky scrambles", "Panoramic views", "Forest registration"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/kumara-parvatha-trek.jpg",
   },
   {
     name: "Kodachadri Trek",
@@ -422,7 +422,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Trek via Hidlumane Falls to Kodachadri Peak with visits to Devagange Pond and Nagara Fort.",
     highlights: ["Hidlumane Falls", "Devagange Pond", "Nagara Fort", "Sunset views", "Dense forests"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/kodachadri-trek.jpg",
   },
   {
     name: "Bandaje Falls Trek",
@@ -434,7 +434,7 @@ export const DEFAULT_TREKS = [
     price_per_person: 3299,
     description: "Trek to Bandaje Arbi Falls through dense rainforest with visit to Ballalarayana Durga Fort.",
     highlights: ["200 ft waterfall", "Rainforest trail", "Ballalarayana Durga Fort", "Shola grasslands", "Offbeat adventure"],
-    image: "/images/hero/hero-trekking.jpg",
+    image: "/images/treks/bandaje-falls.jpg",
   },
 ];
 

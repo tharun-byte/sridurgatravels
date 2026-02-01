@@ -3,8 +3,21 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bus, Mountain, Car, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-const slides = [
+interface BannerImage {
+  id: string;
+  position: number;
+  image_url: string;
+  title: string | null;
+  subtitle: string | null;
+  cta_text: string | null;
+  cta_link: string | null;
+  is_active: boolean;
+}
+
+const defaultSlides = [
   {
     image: '/images/hero/hero-bus.jpg',
     title: 'Book Regular & AC Buses Online',
@@ -12,7 +25,7 @@ const slides = [
     cta: 'Reserve Your Bus Today',
     href: '/rentals',
     icon: Bus,
-    label: 'sleeper bus booking',
+    label: 'Bus Rentals',
   },
   {
     image: '/images/hero/hero-trekking.jpg',
@@ -30,19 +43,54 @@ const slides = [
     cta: 'Explore Car Rentals',
     href: '/rentals',
     icon: Car,
-    label: 'Cars And Bus Rentals',
+    label: 'Car Rentals',
   },
+];
+
+const slideIcons = [
+  { icon: Bus, label: 'Bus Rentals' },
+  { icon: Mountain, label: 'Trekking' },
+  { icon: Car, label: 'Car Rentals' },
 ];
 
 export function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Fetch banners from database
+  const { data: bannerData } = useQuery({
+    queryKey: ['home-banners'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('banner_images')
+        .select('*')
+        .eq('is_active', true)
+        .order('position');
+      
+      if (error) throw error;
+      return data as BannerImage[];
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Convert database banners to slides format, fallback to defaults
+  const slides = bannerData && bannerData.length > 0
+    ? bannerData.map((banner, index) => ({
+        image: banner.image_url,
+        title: banner.title || defaultSlides[index]?.title || '',
+        subtitle: banner.subtitle || defaultSlides[index]?.subtitle || '',
+        cta: banner.cta_text || defaultSlides[index]?.cta || 'Learn More',
+        href: banner.cta_link || defaultSlides[index]?.href || '/',
+        icon: slideIcons[index]?.icon || Bus,
+        label: slideIcons[index]?.label || 'Explore',
+      }))
+    : defaultSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const goToSlide = (index: number) => setCurrentSlide(index);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);

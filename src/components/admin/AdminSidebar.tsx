@@ -34,6 +34,7 @@ import {
 
 const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
+  { title: 'Banners', url: '/admin/banners', icon: Image },
   { title: 'Vehicles', url: '/admin/vehicles', icon: Car },
   { title: 'Treks', url: '/admin/treks', icon: Mountain },
   { title: 'Bookings', url: '/admin/bookings', icon: Calendar },
