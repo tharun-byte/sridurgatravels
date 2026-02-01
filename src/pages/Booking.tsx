@@ -7,24 +7,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, Loader2, CheckCircle, Bus, Mountain } from 'lucide-react';
+import { CalendarIcon, Loader2, CheckCircle, Bus, Mountain, Plus, Trash2, User, Users, MapPin, Clock, IndianRupee } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { z } from 'zod';
+
+// Person schema for trek booking
+interface TrekPerson {
+  id: string;
+  name: string;
+  age: string;
+  gender: string;
+  phone: string;
+}
 
 const bookingSchema = z.object({
   customer_name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
   customer_email: z.string().trim().email('Invalid email address').max(255),
   customer_phone: z.string().trim().min(10, 'Phone must be at least 10 digits').max(15),
-  pickup_location: z.string().trim().max(200).optional(),
-  drop_location: z.string().trim().max(200).optional(),
-  num_passengers: z.number().min(1).max(100),
-  special_requirements: z.string().trim().max(500).optional(),
 });
 
 export default function Booking() {
@@ -35,50 +40,67 @@ export default function Booking() {
   const bookingType = searchParams.get('type') as 'vehicle' | 'trek' | null;
   const itemId = searchParams.get('id');
   
+  const [selectedType, setSelectedType] = useState<'vehicle' | 'trek'>(bookingType || 'vehicle');
+  const [selectedItemId, setSelectedItemId] = useState<string>(itemId || '');
+  
+  // Primary contact form data
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_email: '',
     customer_phone: '',
+    special_requirements: '',
+  });
+  
+  // Vehicle-specific fields
+  const [vehicleData, setVehicleData] = useState({
+    trip_type: 'local' as 'local' | 'outstation' | 'airport',
     pickup_location: '',
     drop_location: '',
     travel_date: undefined as Date | undefined,
     return_date: undefined as Date | undefined,
-    num_passengers: 1,
-    special_requirements: '',
+    num_days: 1,
+    travel_time: '',
   });
+  
+  // Trek-specific fields - travelers list
+  const [trekPersons, setTrekPersons] = useState<TrekPerson[]>([
+    { id: '1', name: '', age: '', gender: '', phone: '' }
+  ]);
+  const [trekDate, setTrekDate] = useState<Date | undefined>(undefined);
+  
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Fetch vehicle if booking vehicle
   const { data: vehicle } = useQuery({
-    queryKey: ['vehicle', itemId],
+    queryKey: ['vehicle', selectedItemId],
     queryFn: async () => {
-      if (!itemId || bookingType !== 'vehicle') return null;
+      if (!selectedItemId || selectedType !== 'vehicle') return null;
       const { data, error } = await supabase
         .from('vehicles')
         .select('*, vehicle_images(*)')
-        .eq('id', itemId)
+        .eq('id', selectedItemId)
         .single();
       if (error) throw error;
       return data;
     },
-    enabled: !!itemId && bookingType === 'vehicle',
+    enabled: !!selectedItemId && selectedType === 'vehicle',
   });
 
   // Fetch trek if booking trek
   const { data: trek } = useQuery({
-    queryKey: ['trek', itemId],
+    queryKey: ['trek', selectedItemId],
     queryFn: async () => {
-      if (!itemId || bookingType !== 'trek') return null;
+      if (!selectedItemId || selectedType !== 'trek') return null;
       const { data, error } = await supabase
         .from('treks')
         .select('*, trek_images(*)')
-        .eq('id', itemId)
+        .eq('id', selectedItemId)
         .single();
       if (error) throw error;
       return data;
     },
-    enabled: !!itemId && bookingType === 'trek',
+    enabled: !!selectedItemId && selectedType === 'trek',
   });
 
   // Fetch all vehicles for selection
@@ -87,7 +109,7 @@ export default function Booking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vehicles')
-        .select('id, name, type, capacity')
+        .select('id, name, type, capacity, base_price')
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
@@ -101,7 +123,7 @@ export default function Booking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('treks')
-        .select('id, name, destination, price_per_person')
+        .select('id, name, destination, price_per_person, duration')
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
@@ -109,29 +131,62 @@ export default function Booking() {
     },
   });
 
-  const [selectedType, setSelectedType] = useState<'vehicle' | 'trek'>(bookingType || 'vehicle');
-  const [selectedItemId, setSelectedItemId] = useState<string>(itemId || '');
-
   useEffect(() => {
     if (bookingType) setSelectedType(bookingType);
     if (itemId) setSelectedItemId(itemId);
   }, [bookingType, itemId]);
 
+  // Add a new person for trek
+  const addPerson = () => {
+    setTrekPersons([
+      ...trekPersons,
+      { id: Date.now().toString(), name: '', age: '', gender: '', phone: '' }
+    ]);
+  };
+
+  // Remove a person
+  const removePerson = (id: string) => {
+    if (trekPersons.length > 1) {
+      setTrekPersons(trekPersons.filter(p => p.id !== id));
+    }
+  };
+
+  // Update person details
+  const updatePerson = (id: string, field: keyof TrekPerson, value: string) => {
+    setTrekPersons(trekPersons.map(p => 
+      p.id === id ? { ...p, [field]: value } : p
+    ));
+  };
+
   const createBookingMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async () => {
+      // Build special requirements with person details for trek
+      let specialReq = formData.special_requirements?.trim() || '';
+      
+      if (selectedType === 'trek') {
+        const personDetails = trekPersons.map((p, i) => 
+          `Person ${i + 1}: ${p.name}, Age: ${p.age}, Gender: ${p.gender}, Phone: ${p.phone || 'N/A'}`
+        ).join('\n');
+        specialReq = `--- Traveler Details ---\n${personDetails}\n\n${specialReq ? '--- Additional Notes ---\n' + specialReq : ''}`;
+      } else {
+        specialReq = `Trip Type: ${vehicleData.trip_type}\n${vehicleData.travel_time ? 'Pickup Time: ' + vehicleData.travel_time + '\n' : ''}Number of Days: ${vehicleData.num_days}\n\n${specialReq ? '--- Additional Notes ---\n' + specialReq : ''}`;
+      }
+
+      const travelDate = selectedType === 'trek' ? trekDate : vehicleData.travel_date;
+
       const bookingData = {
         booking_type: selectedType,
         vehicle_id: selectedType === 'vehicle' ? selectedItemId : null,
         trek_id: selectedType === 'trek' ? selectedItemId : null,
-        customer_name: data.customer_name.trim(),
-        customer_email: data.customer_email.trim(),
-        customer_phone: data.customer_phone.trim(),
-        pickup_location: data.pickup_location?.trim() || null,
-        drop_location: data.drop_location?.trim() || null,
-        travel_date: data.travel_date ? format(data.travel_date, 'yyyy-MM-dd') : null,
-        return_date: data.return_date ? format(data.return_date, 'yyyy-MM-dd') : null,
-        num_passengers: data.num_passengers,
-        special_requirements: data.special_requirements?.trim() || null,
+        customer_name: formData.customer_name.trim(),
+        customer_email: formData.customer_email.trim(),
+        customer_phone: formData.customer_phone.trim(),
+        pickup_location: selectedType === 'vehicle' ? vehicleData.pickup_location?.trim() || null : null,
+        drop_location: selectedType === 'vehicle' ? vehicleData.drop_location?.trim() || null : null,
+        travel_date: travelDate ? format(travelDate, 'yyyy-MM-dd') : null,
+        return_date: selectedType === 'vehicle' && vehicleData.return_date ? format(vehicleData.return_date, 'yyyy-MM-dd') : null,
+        num_passengers: selectedType === 'trek' ? trekPersons.length : 1,
+        special_requirements: specialReq || null,
         status: 'pending' as const,
       };
 
@@ -145,7 +200,7 @@ export default function Booking() {
         description: 'We will contact you shortly to confirm your booking.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Booking Failed',
         description: error.message,
@@ -155,52 +210,66 @@ export default function Booking() {
   });
 
   const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
     try {
       bookingSchema.parse({
         customer_name: formData.customer_name,
         customer_email: formData.customer_email,
         customer_phone: formData.customer_phone,
-        pickup_location: formData.pickup_location,
-        drop_location: formData.drop_location,
-        num_passengers: formData.num_passengers,
-        special_requirements: formData.special_requirements,
       });
-
-      if (!formData.travel_date) {
-        setErrors({ travel_date: 'Please select a travel date' });
-        return false;
-      }
-
-      if (!selectedItemId) {
-        setErrors({ item: 'Please select a vehicle or trek' });
-        return false;
-      }
-
-      setErrors({});
-      return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
           if (err.path[0]) {
             newErrors[err.path[0] as string] = err.message;
           }
         });
-        setErrors(newErrors);
       }
-      return false;
     }
+
+    if (!selectedItemId) {
+      newErrors.item = 'Please select a vehicle or trek';
+    }
+
+    if (selectedType === 'trek') {
+      if (!trekDate) {
+        newErrors.travel_date = 'Please select a travel date';
+      }
+      // Validate each person
+      trekPersons.forEach((person, index) => {
+        if (!person.name.trim()) {
+          newErrors[`person_${index}_name`] = 'Name is required';
+        }
+        if (!person.age.trim()) {
+          newErrors[`person_${index}_age`] = 'Age is required';
+        }
+        if (!person.gender) {
+          newErrors[`person_${index}_gender`] = 'Gender is required';
+        }
+      });
+    } else {
+      if (!vehicleData.travel_date) {
+        newErrors.travel_date = 'Please select a travel date';
+      }
+      if (!vehicleData.pickup_location.trim()) {
+        newErrors.pickup_location = 'Pickup location is required';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      createBookingMutation.mutate(formData);
+      createBookingMutation.mutate();
     }
   };
 
-  const selectedItem = selectedType === 'vehicle' ? vehicle : trek;
-  const itemName = vehicle?.name || trek?.name || '';
+  const selectedVehicle = vehicles?.find(v => v.id === selectedItemId);
+  const selectedTrek = treks?.find(t => t.id === selectedItemId);
 
   if (isSuccess) {
     return (
@@ -223,12 +292,17 @@ export default function Booking() {
                     customer_name: '',
                     customer_email: '',
                     customer_phone: '',
+                    special_requirements: '',
+                  });
+                  setTrekPersons([{ id: '1', name: '', age: '', gender: '', phone: '' }]);
+                  setVehicleData({
+                    trip_type: 'local',
                     pickup_location: '',
                     drop_location: '',
                     travel_date: undefined,
                     return_date: undefined,
-                    num_passengers: 1,
-                    special_requirements: '',
+                    num_days: 1,
+                    travel_time: '',
                   });
                 }}>
                   New Booking
@@ -244,29 +318,32 @@ export default function Booking() {
   return (
     <Layout>
       {/* Banner */}
-      <section className="relative h-[300px] bg-hero overflow-hidden">
+      <section className="relative h-[250px] md:h-[300px] bg-hero overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-hero/90 to-hero/70" />
-        <div className="relative container h-full flex items-center">
+        <div className="relative container h-full flex items-center px-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold text-hero-foreground mb-4">
+            <h1 className="text-3xl md:text-5xl font-heading font-bold text-hero-foreground mb-2 md:mb-4">
               Book Your Journey
             </h1>
-            <p className="text-xl text-hero-foreground/90">
-              {itemName ? `Booking: ${itemName}` : 'Choose a vehicle or trek package'}
+            <p className="text-lg md:text-xl text-hero-foreground/90">
+              {selectedType === 'vehicle' 
+                ? (selectedVehicle ? `Booking: ${selectedVehicle.name}` : 'Book a vehicle for your trip')
+                : (selectedTrek ? `Booking: ${selectedTrek.name}` : 'Book a trek package')
+              }
             </p>
           </div>
         </div>
       </section>
 
-      <section className="py-12">
-        <div className="container max-w-4xl">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Service Selection */}
+      <section className="py-8 md:py-12">
+        <div className="container max-w-4xl px-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Service Type Selection */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {selectedType === 'vehicle' ? <Bus className="h-5 w-5" /> : <Mountain className="h-5 w-5" />}
-                  Select Service
+                  {selectedType === 'vehicle' ? <Bus className="h-5 w-5 text-primary" /> : <Mountain className="h-5 w-5 text-primary" />}
+                  Select Service Type
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -274,46 +351,54 @@ export default function Booking() {
                   <Button
                     type="button"
                     variant={selectedType === 'vehicle' ? 'default' : 'outline'}
-                    className="h-20 flex-col gap-2"
+                    className="h-16 md:h-20 flex-col gap-1 md:gap-2"
                     onClick={() => {
                       setSelectedType('vehicle');
-                      setSelectedItemId('');
+                      if (bookingType !== 'vehicle') setSelectedItemId('');
                     }}
                   >
-                    <Bus className="h-6 w-6" />
-                    Vehicle Rental
+                    <Bus className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">Vehicle Rental</span>
                   </Button>
                   <Button
                     type="button"
                     variant={selectedType === 'trek' ? 'default' : 'outline'}
-                    className="h-20 flex-col gap-2"
+                    className="h-16 md:h-20 flex-col gap-1 md:gap-2"
                     onClick={() => {
                       setSelectedType('trek');
-                      setSelectedItemId('');
+                      if (bookingType !== 'trek') setSelectedItemId('');
                     }}
                   >
-                    <Mountain className="h-6 w-6" />
-                    Trek Package
+                    <Mountain className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm">Trek Package</span>
                   </Button>
                 </div>
 
                 <div>
-                  <Label>Select {selectedType === 'vehicle' ? 'Vehicle' : 'Trek Package'}</Label>
+                  <Label className="text-sm font-medium">
+                    Select {selectedType === 'vehicle' ? 'Vehicle' : 'Trek Package'} *
+                  </Label>
                   <Select value={selectedItemId} onValueChange={setSelectedItemId}>
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1.5">
                       <SelectValue placeholder={`Choose a ${selectedType}`} />
                     </SelectTrigger>
                     <SelectContent>
                       {selectedType === 'vehicle' ? (
                         vehicles?.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
-                            {v.name} ({v.capacity} seater)
+                            <span className="flex items-center gap-2">
+                              {v.name} 
+                              <span className="text-muted-foreground">({v.capacity} seater) - ₹{v.base_price?.toLocaleString()}</span>
+                            </span>
                           </SelectItem>
                         ))
                       ) : (
                         treks?.map((t) => (
                           <SelectItem key={t.id} value={t.id}>
-                            {t.name} - {t.destination} (₹{t.price_per_person}/person)
+                            <span className="flex items-center gap-2">
+                              {t.name}
+                              <span className="text-muted-foreground">- {t.destination} (₹{t.price_per_person}/person)</span>
+                            </span>
                           </SelectItem>
                         ))
                       )}
@@ -321,13 +406,43 @@ export default function Booking() {
                   </Select>
                   {errors.item && <p className="text-sm text-destructive mt-1">{errors.item}</p>}
                 </div>
+
+                {/* Selected Item Preview */}
+                {selectedItemId && (selectedVehicle || selectedTrek) && (
+                  <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        {selectedType === 'vehicle' ? (
+                          <Bus className="h-6 w-6 text-primary" />
+                        ) : (
+                          <Mountain className="h-6 w-6 text-primary" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{selectedVehicle?.name || selectedTrek?.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedType === 'vehicle' 
+                            ? `${selectedVehicle?.capacity} seater • ₹${selectedVehicle?.base_price?.toLocaleString()}`
+                            : `${selectedTrek?.destination} • ₹${selectedTrek?.price_per_person}/person`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Personal Details */}
+            {/* Primary Contact Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Your Details</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  Contact Details
+                </CardTitle>
+                <CardDescription>
+                  Primary contact for this booking
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,25 +453,10 @@ export default function Booking() {
                       value={formData.customer_name}
                       onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
                       placeholder="Enter your full name"
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                     {errors.customer_name && <p className="text-sm text-destructive mt-1">{errors.customer_name}</p>}
                   </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.customer_email}
-                      onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
-                      placeholder="your@email.com"
-                      className="mt-1"
-                    />
-                    {errors.customer_email && <p className="text-sm text-destructive mt-1">{errors.customer_email}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
@@ -364,53 +464,209 @@ export default function Booking() {
                       value={formData.customer_phone}
                       onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
                       placeholder="+91 98765 43210"
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                     {errors.customer_phone && <p className="text-sm text-destructive mt-1">{errors.customer_phone}</p>}
                   </div>
-                  <div>
-                    <Label htmlFor="passengers">Number of Passengers *</Label>
-                    <Input
-                      id="passengers"
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={formData.num_passengers}
-                      onChange={(e) => setFormData({ ...formData, num_passengers: parseInt(e.target.value) || 1 })}
-                      className="mt-1"
-                    />
-                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.customer_email}
+                    onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                    placeholder="your@email.com"
+                    className="mt-1.5"
+                  />
+                  {errors.customer_email && <p className="text-sm text-destructive mt-1">{errors.customer_email}</p>}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Trip Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Trip Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Vehicle-specific Form */}
+            {selectedType === 'vehicle' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Trip Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Trip Type */}
                   <div>
-                    <Label>Travel Date *</Label>
+                    <Label>Trip Type *</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-1.5">
+                      {[
+                        { value: 'local', label: 'Local' },
+                        { value: 'outstation', label: 'Outstation' },
+                        { value: 'airport', label: 'Airport Transfer' },
+                      ].map((type) => (
+                        <Button
+                          key={type.value}
+                          type="button"
+                          variant={vehicleData.trip_type === type.value ? 'default' : 'outline'}
+                          size="sm"
+                          className="text-xs md:text-sm"
+                          onClick={() => setVehicleData({ ...vehicleData, trip_type: type.value as typeof vehicleData.trip_type })}
+                        >
+                          {type.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Travel Date *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full mt-1.5 justify-start text-left font-normal",
+                              !vehicleData.travel_date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {vehicleData.travel_date ? format(vehicleData.travel_date, "PPP") : "Select date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={vehicleData.travel_date}
+                            onSelect={(date) => setVehicleData({ ...vehicleData, travel_date: date })}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {errors.travel_date && <p className="text-sm text-destructive mt-1">{errors.travel_date}</p>}
+                    </div>
+
+                    {vehicleData.trip_type === 'outstation' && (
+                      <div>
+                        <Label>Return Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full mt-1.5 justify-start text-left font-normal",
+                                !vehicleData.return_date && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {vehicleData.return_date ? format(vehicleData.return_date, "PPP") : "Select date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={vehicleData.return_date}
+                              onSelect={(date) => setVehicleData({ ...vehicleData, return_date: date })}
+                              disabled={(date) => date < (vehicleData.travel_date || new Date())}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Time and Days */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="time">Pickup Time</Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={vehicleData.travel_time}
+                        onChange={(e) => setVehicleData({ ...vehicleData, travel_time: e.target.value })}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    {vehicleData.trip_type === 'outstation' && (
+                      <div>
+                        <Label htmlFor="days">Number of Days</Label>
+                        <Input
+                          id="days"
+                          type="number"
+                          min={1}
+                          max={30}
+                          value={vehicleData.num_days}
+                          onChange={(e) => setVehicleData({ ...vehicleData, num_days: parseInt(e.target.value) || 1 })}
+                          className="mt-1.5"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Locations */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="pickup">Pickup Location *</Label>
+                      <Input
+                        id="pickup"
+                        value={vehicleData.pickup_location}
+                        onChange={(e) => setVehicleData({ ...vehicleData, pickup_location: e.target.value })}
+                        placeholder="Enter pickup address"
+                        className="mt-1.5"
+                      />
+                      {errors.pickup_location && <p className="text-sm text-destructive mt-1">{errors.pickup_location}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="drop">Drop Location</Label>
+                      <Input
+                        id="drop"
+                        value={vehicleData.drop_location}
+                        onChange={(e) => setVehicleData({ ...vehicleData, drop_location: e.target.value })}
+                        placeholder="Enter drop address"
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Trek-specific Form - Traveler Details */}
+            {selectedType === 'trek' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    Traveler Details
+                  </CardTitle>
+                  <CardDescription>
+                    Add details for all travelers joining this trek ({trekPersons.length} {trekPersons.length === 1 ? 'person' : 'persons'})
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Trek Date */}
+                  <div>
+                    <Label>Trek Date *</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full mt-1 justify-start text-left font-normal",
-                            !formData.travel_date && "text-muted-foreground"
+                            "w-full md:w-auto mt-1.5 justify-start text-left font-normal",
+                            !trekDate && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.travel_date ? format(formData.travel_date, "PPP") : "Select date"}
+                          {trekDate ? format(trekDate, "PPP") : "Select trek date"}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={formData.travel_date}
-                          onSelect={(date) => setFormData({ ...formData, travel_date: date })}
+                          selected={trekDate}
+                          onSelect={setTrekDate}
                           disabled={(date) => date < new Date()}
                           initialFocus
                         />
@@ -419,74 +675,133 @@ export default function Booking() {
                     {errors.travel_date && <p className="text-sm text-destructive mt-1">{errors.travel_date}</p>}
                   </div>
 
-                  <div>
-                    <Label>Return Date (Optional)</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full mt-1 justify-start text-left font-normal",
-                            !formData.return_date && "text-muted-foreground"
+                  {/* Travelers List */}
+                  <div className="space-y-4">
+                    {trekPersons.map((person, index) => (
+                      <div key={person.id} className="p-4 rounded-lg border bg-muted/30 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary" />
+                            Person {index + 1}
+                          </h4>
+                          {trekPersons.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => removePerson(person.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.return_date ? format(formData.return_date, "PPP") : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={formData.return_date}
-                          onSelect={(date) => setFormData({ ...formData, return_date: date })}
-                          disabled={(date) => date < (formData.travel_date || new Date())}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div className="col-span-2 md:col-span-1">
+                            <Label className="text-xs">Name *</Label>
+                            <Input
+                              value={person.name}
+                              onChange={(e) => updatePerson(person.id, 'name', e.target.value)}
+                              placeholder="Full name"
+                              className="mt-1 h-9 text-sm"
+                            />
+                            {errors[`person_${index}_name`] && (
+                              <p className="text-xs text-destructive mt-0.5">{errors[`person_${index}_name`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label className="text-xs">Age *</Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={100}
+                              value={person.age}
+                              onChange={(e) => updatePerson(person.id, 'age', e.target.value)}
+                              placeholder="Age"
+                              className="mt-1 h-9 text-sm"
+                            />
+                            {errors[`person_${index}_age`] && (
+                              <p className="text-xs text-destructive mt-0.5">{errors[`person_${index}_age`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label className="text-xs">Gender *</Label>
+                            <Select value={person.gender} onValueChange={(val) => updatePerson(person.id, 'gender', val)}>
+                              <SelectTrigger className="mt-1 h-9 text-sm">
+                                <SelectValue placeholder="Select" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors[`person_${index}_gender`] && (
+                              <p className="text-xs text-destructive mt-0.5">{errors[`person_${index}_gender`]}</p>
+                            )}
+                          </div>
+                          <div className="col-span-2 md:col-span-1">
+                            <Label className="text-xs">Phone (Optional)</Label>
+                            <Input
+                              value={person.phone}
+                              onChange={(e) => updatePerson(person.id, 'phone', e.target.value)}
+                              placeholder="Phone"
+                              className="mt-1 h-9 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
 
-                {selectedType === 'vehicle' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="pickup">Pickup Location</Label>
-                      <Input
-                        id="pickup"
-                        value={formData.pickup_location}
-                        onChange={(e) => setFormData({ ...formData, pickup_location: e.target.value })}
-                        placeholder="Enter pickup address"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="drop">Drop Location</Label>
-                      <Input
-                        id="drop"
-                        value={formData.drop_location}
-                        onChange={(e) => setFormData({ ...formData, drop_location: e.target.value })}
-                        placeholder="Enter drop address"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                )}
+                  {/* Add Person Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-dashed"
+                    onClick={addPerson}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Person
+                  </Button>
 
-                <div>
-                  <Label htmlFor="requirements">Special Requirements</Label>
-                  <Textarea
-                    id="requirements"
-                    value={formData.special_requirements}
-                    onChange={(e) => setFormData({ ...formData, special_requirements: e.target.value })}
-                    placeholder="Any special requests or requirements..."
-                    className="mt-1"
-                    rows={3}
-                  />
-                </div>
+                  {/* Price Summary */}
+                  {selectedTrek && (
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          {trekPersons.length} × ₹{selectedTrek.price_per_person.toLocaleString()}
+                        </span>
+                        <span className="text-xl font-bold text-primary flex items-center">
+                          <IndianRupee className="h-4 w-4" />
+                          {(trekPersons.length * selectedTrek.price_per_person).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        *Final price may vary. Our team will confirm the exact amount.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Special Requirements */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Additional Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={formData.special_requirements}
+                  onChange={(e) => setFormData({ ...formData, special_requirements: e.target.value })}
+                  placeholder="Any special requests, dietary requirements, medical conditions, etc..."
+                  rows={3}
+                />
               </CardContent>
             </Card>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <Button
               type="submit"
               size="lg"
@@ -499,7 +814,10 @@ export default function Booking() {
                   Submitting...
                 </>
               ) : (
-                'Submit Booking Request'
+                <>
+                  <CheckCircle className="mr-2 h-5 w-5" />
+                  Submit Booking Request
+                </>
               )}
             </Button>
           </form>
