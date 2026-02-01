@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { COMPANY_INFO } from '@/lib/constants';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +44,33 @@ const Contact = () => {
   const vehicleId = searchParams.get('vehicle');
   const trekId = searchParams.get('trek');
   const [loading, setLoading] = useState(false);
+
+  // Fetch dynamic settings
+  const { data: settings } = useQuery({
+    queryKey: ['site-settings-public'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('key, value');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Parse settings with fallbacks
+  const getSetting = (key: string, defaultValue: string = '') => {
+    if (!settings) return defaultValue;
+    const setting = settings.find((s) => s.key === key);
+    return setting?.value || defaultValue;
+  };
+
+  const companyEmail = getSetting('email', COMPANY_INFO.email);
+  const phone1 = getSetting('phone_1', COMPANY_INFO.phones[0]);
+  const phone2 = getSetting('phone_2', COMPANY_INFO.phones[1] || '');
+  const address = getSetting('address', COMPANY_INFO.address);
+  const workingHours = getSetting('working_hours', 'Mon-Sat: 9:00 AM - 8:00 PM');
+
+  const phones = [phone1, phone2].filter(Boolean);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -108,7 +136,7 @@ const Contact = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {COMPANY_INFO.phones.map((phone, index) => (
+                  {phones.map((phone, index) => (
                     <a
                       key={index}
                       href={`tel:${phone.replace(/\s/g, '')}`}
@@ -129,10 +157,10 @@ const Contact = () => {
                 </CardHeader>
                 <CardContent>
                   <a
-                    href={`mailto:${COMPANY_INFO.email}`}
+                    href={`mailto:${companyEmail}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    {COMPANY_INFO.email}
+                    {companyEmail}
                   </a>
                 </CardContent>
               </Card>
@@ -145,7 +173,7 @@ const Contact = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{COMPANY_INFO.address}</p>
+                  <p className="text-muted-foreground">{address}</p>
                 </CardContent>
               </Card>
 
@@ -157,7 +185,7 @@ const Contact = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1 text-muted-foreground">
-                  <p>Monday - Saturday: 9:00 AM - 8:00 PM</p>
+                  <p>{workingHours}</p>
                   <p>Sunday: 10:00 AM - 6:00 PM</p>
                 </CardContent>
               </Card>
@@ -292,7 +320,7 @@ const Contact = () => {
             Call us directly for urgent bookings or inquiries. Our team is available to help you.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {COMPANY_INFO.phones.map((phone, index) => (
+            {phones.map((phone, index) => (
               <a
                 key={index}
                 href={`tel:${phone.replace(/\s/g, '')}`}

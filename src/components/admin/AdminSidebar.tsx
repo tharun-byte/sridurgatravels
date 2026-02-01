@@ -11,6 +11,7 @@ import {
   LogOut,
   Bus,
   ChevronLeft,
+  Star,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ const menuItems = [
   { title: 'Bookings', url: '/admin/bookings', icon: Calendar },
   { title: 'Messages', url: '/admin/messages', icon: Mail },
   { title: 'Gallery', url: '/admin/gallery', icon: Image },
+  { title: 'Testimonials', url: '/admin/testimonials', icon: Star },
   { title: 'Admin Users', url: '/admin/users', icon: Users },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
