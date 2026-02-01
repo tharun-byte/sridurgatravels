@@ -301,6 +301,53 @@ export type Database = {
         }
         Relationships: []
       }
+      trek_dates: {
+        Row: {
+          available_date: string
+          created_at: string
+          current_bookings: number | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          notes: string | null
+          price_override: number | null
+          trek_id: string
+          updated_at: string
+        }
+        Insert: {
+          available_date: string
+          created_at?: string
+          current_bookings?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          notes?: string | null
+          price_override?: number | null
+          trek_id: string
+          updated_at?: string
+        }
+        Update: {
+          available_date?: string
+          created_at?: string
+          current_bookings?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          notes?: string | null
+          price_override?: number | null
+          trek_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trek_dates_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trek_images: {
         Row: {
           created_at: string

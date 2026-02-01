@@ -39,6 +39,7 @@ const menuItems = [
   { title: 'Banners', url: '/admin/banners', icon: Palette },
   { title: 'Vehicles', url: '/admin/vehicles', icon: Car },
   { title: 'Treks', url: '/admin/treks', icon: Mountain },
+  { title: 'Trek Dates', url: '/admin/treks/dates', icon: Calendar },
   { title: 'Bookings', url: '/admin/bookings', icon: Calendar },
   { title: 'Messages', url: '/admin/messages', icon: Mail },
   { title: 'Gallery', url: '/admin/gallery', icon: Images },

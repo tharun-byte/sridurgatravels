@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, Loader2, CheckCircle, Bus, Mountain, Plus, Trash2, User, Users, MapPin, Clock, IndianRupee } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { z } from 'zod';
 
@@ -129,6 +129,24 @@ export default function Booking() {
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch available dates for the selected trek
+  const { data: availableTrekDates } = useQuery({
+    queryKey: ['trek-available-dates', selectedItemId],
+    queryFn: async () => {
+      if (!selectedItemId || selectedType !== 'trek') return [];
+      const { data, error } = await supabase
+        .from('trek_dates')
+        .select('id, available_date, max_participants, current_bookings, price_override')
+        .eq('trek_id', selectedItemId)
+        .eq('is_active', true)
+        .gte('available_date', format(new Date(), 'yyyy-MM-dd'))
+        .order('available_date', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedItemId && selectedType === 'trek',
   });
 
   useEffect(() => {
@@ -646,32 +664,51 @@ export default function Booking() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Trek Date */}
+                  {/* Trek Date - Only show dates set by admin */}
                   <div>
                     <Label>Trek Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full md:w-auto mt-1.5 justify-start text-left font-normal",
-                            !trekDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {trekDate ? format(trekDate, "PPP") : "Select trek date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={trekDate}
-                          onSelect={setTrekDate}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    {availableTrekDates && availableTrekDates.length > 0 ? (
+                      <Select 
+                        value={trekDate ? format(trekDate, 'yyyy-MM-dd') : ''} 
+                        onValueChange={(value) => setTrekDate(new Date(value + 'T00:00:00'))}
+                      >
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select available date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTrekDates.map((dateInfo) => {
+                            const spotsLeft = dateInfo.max_participants - dateInfo.current_bookings;
+                            const isFull = spotsLeft <= 0;
+                            return (
+                              <SelectItem 
+                                key={dateInfo.id} 
+                                value={dateInfo.available_date}
+                                disabled={isFull}
+                              >
+                                <span className="flex items-center gap-2">
+                                  {format(new Date(dateInfo.available_date + 'T00:00:00'), 'EEEE, dd MMM yyyy')}
+                                  {isFull ? (
+                                    <span className="text-xs text-destructive">(Full)</span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">({spotsLeft} spots left)</span>
+                                  )}
+                                </span>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="mt-2 p-4 rounded-lg bg-muted/50 border border-dashed text-center">
+                        <CalendarIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          No dates available for this trek yet.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Please contact us for custom dates or check back later.
+                        </p>
+                      </div>
+                    )}
                     {errors.travel_date && <p className="text-sm text-destructive mt-1">{errors.travel_date}</p>}
                   </div>
 
