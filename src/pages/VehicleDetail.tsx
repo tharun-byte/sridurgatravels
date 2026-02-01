@@ -90,7 +90,7 @@ export default function VehicleDetail() {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Image */}
-          <div className="relative aspect-video md:aspect-square rounded-2xl overflow-hidden">
+          <div className="relative aspect-[4/3] md:aspect-[4/3] rounded-2xl overflow-hidden">
             <img 
               src={primaryImage} 
               alt={vehicle.name}
