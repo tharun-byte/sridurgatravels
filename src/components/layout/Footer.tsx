@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
+import logo from '@/assets/logo.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,10 +12,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-heading font-bold text-lg">SD</span>
-              </div>
+            <div className="flex items-center gap-3">
+              <img 
+                src={logo} 
+                alt="Sri Durga Travels Logo" 
+                className="h-14 w-auto"
+              />
               <span className="font-heading font-bold text-xl">{COMPANY_INFO.name}</span>
             </div>
             <p className="text-hero-foreground/80 text-sm leading-relaxed">

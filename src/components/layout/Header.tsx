@@ -13,6 +13,7 @@ import {
 import { COMPANY_INFO, NAV_LINKS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import logo from '@/assets/logo.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,10 +80,12 @@ export function Header() {
       <nav className="bg-background border-b shadow-sm">
         <div className="container flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-heading font-bold text-lg">SD</span>
-            </div>
+          <Link to="/" className="flex items-center gap-3">
+            <img 
+              src={logo} 
+              alt="Sri Durga Travels Logo" 
+              className="h-12 w-auto"
+            />
             <span className="font-heading font-bold text-xl text-foreground hidden sm:inline">
               {COMPANY_INFO.name}
             </span>

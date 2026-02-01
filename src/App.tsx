@@ -26,6 +26,11 @@ import VehicleForm from "./pages/admin/vehicles/VehicleForm";
 import TrekList from "./pages/admin/treks/TrekList";
 import TrekForm from "./pages/admin/treks/TrekForm";
 import UserManagement from "./pages/admin/users/UserManagement";
+import BookingList from "./pages/admin/bookings/BookingList";
+import MessageList from "./pages/admin/messages/MessageList";
+import GalleryManager from "./pages/admin/gallery/GalleryManager";
+import SettingsPage from "./pages/admin/settings/SettingsPage";
+import TestimonialList from "./pages/admin/testimonials/TestimonialList";
 import { AdminLayout } from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
@@ -61,6 +66,11 @@ const App = () => (
               <Route path="treks/new" element={<TrekForm />} />
               <Route path="treks/:id" element={<TrekForm />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="bookings" element={<BookingList />} />
+              <Route path="messages" element={<MessageList />} />
+              <Route path="gallery" element={<GalleryManager />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="testimonials" element={<TestimonialList />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
