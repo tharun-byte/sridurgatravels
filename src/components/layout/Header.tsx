@@ -77,17 +77,15 @@ export function Header() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="bg-background border-b shadow-sm">
+      <nav className="bg-hero border-b border-white/10 shadow-sm">
         <div className="container flex items-center justify-between h-14 md:h-20">
-          {/* Logo with dark pill background */}
+          {/* Logo */}
           <Link to="/" className="flex items-center h-full py-1.5 md:py-2">
-            <div className="bg-hero/90 backdrop-blur-sm rounded-lg px-2 md:px-3 py-1.5 md:py-2 flex items-center">
-              <img 
-                src={logoTransparent} 
-                alt="Sri Durga Travels Logo" 
-                className="h-8 md:h-14 w-auto object-contain"
-              />
-            </div>
+            <img 
+              src={logoTransparent} 
+              alt="Sri Durga Travels Logo" 
+              className="h-10 md:h-16 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -100,7 +98,7 @@ export function Header() {
                   "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   isActive(link.href)
                     ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    : "text-white/90 hover:bg-white/10 hover:text-white"
                 )}
               >
                 {link.name}
@@ -129,7 +127,7 @@ export function Header() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="text-white hover:text-primary">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -150,7 +148,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <Link to="/login">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="text-white hover:text-primary">
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
