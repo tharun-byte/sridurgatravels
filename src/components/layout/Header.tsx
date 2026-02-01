@@ -27,17 +27,17 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Top Contact Bar */}
-      <div className="bg-hero text-hero-foreground py-2">
+      {/* Top Contact Bar - Hidden on mobile for cleaner look */}
+      <div className="hidden md:block bg-hero text-hero-foreground py-2">
         <div className="container flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <a href={`mailto:${COMPANY_INFO.email}`} className="flex items-center gap-2 hover:text-primary transition-colors">
               <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">{COMPANY_INFO.email}</span>
+              <span>{COMPANY_INFO.email}</span>
             </a>
             <a href={`tel:${COMPANY_INFO.phones[0]}`} className="flex items-center gap-2 hover:text-primary transition-colors">
               <Phone className="h-4 w-4" />
-              <span className="hidden sm:inline">{COMPANY_INFO.phones[0]}</span>
+              <span>{COMPANY_INFO.phones[0]}</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -46,10 +46,10 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="text-hero-foreground hover:text-primary">
                     <User className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">{profile?.name || user.email}</span>
+                    <span>{profile?.name || user.email}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-background border shadow-lg">
                   {isAdmin && (
                     <>
                       <DropdownMenuItem asChild>
@@ -68,7 +68,7 @@ export function Header() {
               <Link to="/login">
                 <Button variant="ghost" size="sm" className="text-hero-foreground hover:text-primary">
                   <User className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Login</span>
+                  <span>Login</span>
                 </Button>
               </Link>
             )}
@@ -78,14 +78,14 @@ export function Header() {
 
       {/* Main Navigation */}
       <nav className="bg-background border-b shadow-sm">
-        <div className="container flex items-center justify-between h-20">
+        <div className="container flex items-center justify-between h-14 md:h-20">
           {/* Logo with dark pill background */}
-          <Link to="/" className="flex items-center h-full py-2">
-            <div className="bg-hero/90 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center">
+          <Link to="/" className="flex items-center h-full py-1.5 md:py-2">
+            <div className="bg-hero/90 backdrop-blur-sm rounded-lg px-2 md:px-3 py-1.5 md:py-2 flex items-center">
               <img 
                 src={logoTransparent} 
                 alt="Sri Durga Travels Logo" 
-                className="h-12 md:h-14 w-auto object-contain"
+                className="h-8 md:h-14 w-auto object-contain"
               />
             </div>
           </Link>
@@ -117,38 +117,45 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Mobile Menu */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
+          {/* Mobile Menu - Hidden since we have bottom nav */}
+          <div className="lg:hidden flex items-center gap-2">
+            {/* Quick call button for mobile */}
+            <a href={`tel:${COMPANY_INFO.phones[0]}`}>
+              <Button variant="ghost" size="icon" className="text-primary">
+                <Phone className="h-5 w-5" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px]">
-              <div className="flex flex-col gap-4 mt-8">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "px-4 py-3 rounded-md text-base font-medium transition-colors",
-                      isActive(link.href)
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-accent"
-                    )}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                <Link to="/contact" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full mt-4 bg-primary text-primary-foreground">
-                    Book Now
+            </a>
+            {/* User menu for mobile */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
                   </Button>
-                </Link>
-              </div>
-            </SheetContent>
-          </Sheet>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">Admin Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
     </header>
