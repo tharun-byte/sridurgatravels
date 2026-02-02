@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { MobileBottomNav } from './MobileBottomNav';
 import { FloatingContactButtons } from './FloatingContactButtons';
+import { SEOHead } from '@/components/SEOHead';
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead />
       <Header />
       <main className="flex-1 pb-16 lg:pb-0">{children}</main>
       <Footer />

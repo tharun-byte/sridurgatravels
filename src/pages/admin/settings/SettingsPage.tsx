@@ -8,8 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, Building2, Mail, Share2, MessageCircle } from 'lucide-react';
+import { Loader2, Save, Building2, Mail, Share2, MessageCircle, Search, Globe, Eye } from 'lucide-react';
 import { COMPANY_INFO } from '@/lib/constants';
 
 type Setting = { key: string; value: string | null };
@@ -42,6 +43,20 @@ export default function SettingsPage() {
   // Floating buttons state
   const [whatsappNumber, setWhatsappNumber] = useState(COMPANY_INFO.phones[0]);
   const [floatingButtonsEnabled, setFloatingButtonsEnabled] = useState(true);
+
+  // SEO settings state
+  const [siteTitle, setSiteTitle] = useState(COMPANY_INFO.name);
+  const [metaDescription, setMetaDescription] = useState('');
+  const [keywords, setKeywords] = useState('');
+  const [ogTitle, setOgTitle] = useState('');
+  const [ogDescription, setOgDescription] = useState('');
+  const [ogImage, setOgImage] = useState('');
+  const [ogType, setOgType] = useState('website');
+  const [twitterCard, setTwitterCard] = useState('summary_large_image');
+  const [twitterSite, setTwitterSite] = useState('');
+  const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [robotsMeta, setRobotsMeta] = useState('index, follow');
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
@@ -81,6 +96,19 @@ export default function SettingsPage() {
 
       setWhatsappNumber(getValue('whatsapp_number', COMPANY_INFO.phones[0]));
       setFloatingButtonsEnabled(getValue('floating_buttons_enabled', 'true') !== 'false');
+
+      // SEO settings
+      setSiteTitle(getValue('seo_site_title', COMPANY_INFO.name));
+      setMetaDescription(getValue('seo_meta_description', ''));
+      setKeywords(getValue('seo_keywords', ''));
+      setOgTitle(getValue('seo_og_title', ''));
+      setOgDescription(getValue('seo_og_description', ''));
+      setOgImage(getValue('seo_og_image', ''));
+      setOgType(getValue('seo_og_type', 'website'));
+      setTwitterCard(getValue('seo_twitter_card', 'summary_large_image'));
+      setTwitterSite(getValue('seo_twitter_site', ''));
+      setCanonicalUrl(getValue('seo_canonical_url', ''));
+      setRobotsMeta(getValue('seo_robots_meta', 'index, follow'));
     }
   }, [settings]);
 
@@ -109,6 +137,7 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['site-settings-public'] });
       toast({ title: 'Settings saved successfully' });
     },
     onError: (error: Error) => {
@@ -153,6 +182,22 @@ export default function SettingsPage() {
     ]);
   };
 
+  const saveSeoSettings = () => {
+    saveMutation.mutate([
+      { key: 'seo_site_title', value: siteTitle },
+      { key: 'seo_meta_description', value: metaDescription },
+      { key: 'seo_keywords', value: keywords },
+      { key: 'seo_og_title', value: ogTitle },
+      { key: 'seo_og_description', value: ogDescription },
+      { key: 'seo_og_image', value: ogImage },
+      { key: 'seo_og_type', value: ogType },
+      { key: 'seo_twitter_card', value: twitterCard },
+      { key: 'seo_twitter_site', value: twitterSite },
+      { key: 'seo_canonical_url', value: canonicalUrl },
+      { key: 'seo_robots_meta', value: robotsMeta },
+    ]);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -160,6 +205,66 @@ export default function SettingsPage() {
       </div>
     );
   }
+
+  // Google Search Preview component
+  const GoogleSearchPreview = () => {
+    const previewTitle = siteTitle || COMPANY_INFO.name;
+    const previewDescription = metaDescription || 'No description set';
+    const previewUrl = canonicalUrl || 'https://sridurgatravels.lovable.app';
+    
+    return (
+      <div className="border rounded-lg p-4 bg-white">
+        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+          <Eye className="h-3 w-3" /> Google Search Preview
+        </p>
+        <div className="space-y-1">
+          <p className="text-sm text-green-700 truncate">{previewUrl}</p>
+          <h3 className="text-xl text-blue-800 hover:underline cursor-pointer truncate">
+            {previewTitle.length > 60 ? previewTitle.substring(0, 60) + '...' : previewTitle}
+          </h3>
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {previewDescription.length > 160 ? previewDescription.substring(0, 160) + '...' : previewDescription}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  // Social Share Preview component
+  const SocialSharePreview = () => {
+    const previewTitle = ogTitle || siteTitle || COMPANY_INFO.name;
+    const previewDescription = ogDescription || metaDescription || 'No description set';
+    
+    return (
+      <div className="border rounded-lg overflow-hidden bg-white">
+        <p className="text-xs text-muted-foreground p-2 border-b flex items-center gap-1">
+          <Share2 className="h-3 w-3" /> Social Share Preview (Facebook/LinkedIn)
+        </p>
+        {ogImage && (
+          <div className="aspect-video bg-muted relative">
+            <img 
+              src={ogImage} 
+              alt="OG Preview" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        {!ogImage && (
+          <div className="aspect-video bg-muted flex items-center justify-center">
+            <p className="text-muted-foreground text-sm">No image set</p>
+          </div>
+        )}
+        <div className="p-3 space-y-1">
+          <p className="text-xs text-muted-foreground uppercase">sridurgatravels.lovable.app</p>
+          <h4 className="font-semibold text-sm line-clamp-2">{previewTitle}</h4>
+          <p className="text-xs text-muted-foreground line-clamp-2">{previewDescription}</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -173,6 +278,10 @@ export default function SettingsPage() {
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             General
+          </TabsTrigger>
+          <TabsTrigger value="seo" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            SEO
           </TabsTrigger>
           <TabsTrigger value="floating" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
@@ -265,6 +374,212 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* SEO Settings Tab */}
+        <TabsContent value="seo" className="space-y-6">
+          {/* Primary Meta Tags */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Primary Meta Tags
+              </CardTitle>
+              <CardDescription>
+                Configure the main meta tags that affect how your site appears in search results
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="siteTitle">Site Title</Label>
+                <Input
+                  id="siteTitle"
+                  value={siteTitle}
+                  onChange={(e) => setSiteTitle(e.target.value)}
+                  placeholder="Sri Durga Travels - Bus & Trek Booking"
+                  maxLength={60}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {siteTitle.length}/60 characters (recommended max 60)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="metaDescription">Meta Description</Label>
+                <Textarea
+                  id="metaDescription"
+                  value={metaDescription}
+                  onChange={(e) => setMetaDescription(e.target.value)}
+                  placeholder="Book buses, cars, and trekking packages with Sri Durga Travels. Reliable transport services and adventure tours in Karnataka."
+                  rows={3}
+                  maxLength={160}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {metaDescription.length}/160 characters (recommended max 160)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="keywords">Keywords</Label>
+                <Input
+                  id="keywords"
+                  value={keywords}
+                  onChange={(e) => setKeywords(e.target.value)}
+                  placeholder="bus booking, trek packages, Karnataka tours, travel services"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated keywords for search engines
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="canonicalUrl">Canonical URL</Label>
+                  <Input
+                    id="canonicalUrl"
+                    value={canonicalUrl}
+                    onChange={(e) => setCanonicalUrl(e.target.value)}
+                    placeholder="https://sridurgatravels.lovable.app"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="robotsMeta">Robots Meta</Label>
+                  <Select value={robotsMeta} onValueChange={setRobotsMeta}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="index, follow">Index, Follow (Recommended)</SelectItem>
+                      <SelectItem value="index, nofollow">Index, No Follow</SelectItem>
+                      <SelectItem value="noindex, follow">No Index, Follow</SelectItem>
+                      <SelectItem value="noindex, nofollow">No Index, No Follow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Open Graph Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Share2 className="h-5 w-5" />
+                Open Graph Settings
+              </CardTitle>
+              <CardDescription>
+                Configure how your site appears when shared on Facebook, LinkedIn, and other platforms
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ogTitle">OG Title</Label>
+                  <Input
+                    id="ogTitle"
+                    value={ogTitle}
+                    onChange={(e) => setOgTitle(e.target.value)}
+                    placeholder="Leave empty to use Site Title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ogType">OG Type</Label>
+                  <Select value={ogType} onValueChange={setOgType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="website">Website</SelectItem>
+                      <SelectItem value="article">Article</SelectItem>
+                      <SelectItem value="business.business">Business</SelectItem>
+                      <SelectItem value="place">Place</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ogDescription">OG Description</Label>
+                <Textarea
+                  id="ogDescription"
+                  value={ogDescription}
+                  onChange={(e) => setOgDescription(e.target.value)}
+                  placeholder="Leave empty to use Meta Description"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ogImage">OG Image URL</Label>
+                <Input
+                  id="ogImage"
+                  value={ogImage}
+                  onChange={(e) => setOgImage(e.target.value)}
+                  placeholder="https://example.com/image.jpg (Recommended: 1200x630px)"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Recommended size: 1200x630 pixels for optimal display on social media
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Twitter Card Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Twitter Card Settings</CardTitle>
+              <CardDescription>
+                Configure how your site appears when shared on Twitter/X
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="twitterCard">Twitter Card Type</Label>
+                  <Select value={twitterCard} onValueChange={setTwitterCard}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="summary">Summary</SelectItem>
+                      <SelectItem value="summary_large_image">Summary with Large Image</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="twitterSite">Twitter Site Handle</Label>
+                  <Input
+                    id="twitterSite"
+                    value={twitterSite}
+                    onChange={(e) => setTwitterSite(e.target.value)}
+                    placeholder="@yourusername"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Previews */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Live Previews</CardTitle>
+              <CardDescription>
+                See how your site will appear in search results and social shares
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <GoogleSearchPreview />
+                <SocialSharePreview />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button onClick={saveSeoSettings} disabled={saveMutation.isPending} size="lg">
+            {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Save className="h-4 w-4 mr-2" />
+            Save SEO Settings
+          </Button>
         </TabsContent>
 
         {/* Floating Buttons Tab */}

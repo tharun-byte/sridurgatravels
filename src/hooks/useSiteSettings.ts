@@ -15,6 +15,18 @@ export interface SiteSettings {
   instagramUrl: string;
   twitterUrl: string;
   youtubeUrl: string;
+  // SEO Settings
+  siteTitle: string;
+  metaDescription: string;
+  keywords: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  ogType: string;
+  twitterCard: string;
+  twitterSite: string;
+  canonicalUrl: string;
+  robotsMeta: string;
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
@@ -30,6 +42,18 @@ const DEFAULT_SETTINGS: SiteSettings = {
   instagramUrl: '',
   twitterUrl: '',
   youtubeUrl: '',
+  // SEO defaults
+  siteTitle: COMPANY_INFO.name,
+  metaDescription: '',
+  keywords: '',
+  ogTitle: '',
+  ogDescription: '',
+  ogImage: '',
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterSite: '',
+  canonicalUrl: '',
+  robotsMeta: 'index, follow',
 };
 
 async function fetchSiteSettings(): Promise<SiteSettings> {
@@ -67,6 +91,18 @@ async function fetchSiteSettings(): Promise<SiteSettings> {
     instagramUrl: getValue('instagram_url', ''),
     twitterUrl: getValue('twitter_url', ''),
     youtubeUrl: getValue('youtube_url', ''),
+    // SEO Settings
+    siteTitle: getValue('seo_site_title', COMPANY_INFO.name),
+    metaDescription: getValue('seo_meta_description', ''),
+    keywords: getValue('seo_keywords', ''),
+    ogTitle: getValue('seo_og_title', ''),
+    ogDescription: getValue('seo_og_description', ''),
+    ogImage: getValue('seo_og_image', ''),
+    ogType: getValue('seo_og_type', 'website'),
+    twitterCard: getValue('seo_twitter_card', 'summary_large_image'),
+    twitterSite: getValue('seo_twitter_site', ''),
+    canonicalUrl: getValue('seo_canonical_url', ''),
+    robotsMeta: getValue('seo_robots_meta', 'index, follow'),
   };
 }
 
