@@ -3,10 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { PageBanner } from '@/components/layout/PageBanner';
 import { COMPANY_INFO } from '@/lib/constants';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,32 +47,14 @@ const Contact = () => {
   const trekId = searchParams.get('trek');
   const [loading, setLoading] = useState(false);
 
-  // Fetch dynamic settings
-  const { data: settings } = useQuery({
-    queryKey: ['site-settings-public'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('key, value');
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Use shared settings hook - fixes TypeError by ensuring consistent data format
+  const { data: settings } = useSiteSettings();
 
-  // Parse settings with fallbacks
-  const getSetting = (key: string, defaultValue: string = '') => {
-    if (!settings) return defaultValue;
-    const setting = settings.find((s) => s.key === key);
-    return setting?.value || defaultValue;
-  };
-
-  const companyEmail = getSetting('email', COMPANY_INFO.email);
-  const phone1 = getSetting('phone_1', COMPANY_INFO.phones[0]);
-  const phone2 = getSetting('phone_2', COMPANY_INFO.phones[1] || '');
-  const address = getSetting('address', COMPANY_INFO.address);
-  const workingHours = getSetting('working_hours', 'Mon-Sat: 9:00 AM - 8:00 PM');
-
-  const phones = [phone1, phone2].filter(Boolean);
+  // Get values from the processed settings object
+  const companyEmail = settings?.email || COMPANY_INFO.email;
+  const phones = settings?.phones || COMPANY_INFO.phones;
+  const address = settings?.address || COMPANY_INFO.address;
+  const workingHours = settings?.workingHours || 'Mon-Sat: 9:00 AM - 8:00 PM';
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
