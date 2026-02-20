@@ -1,185 +1,131 @@
 
-# Plan: Fix Contact Page & Add SEO Settings to Admin Dashboard
+# Plan: Fix Admin Trek Editing & Populate All Trek Packages with Full Content
 
-## Issue 1: Contact Page Crash (CRITICAL BUG)
+## Root Cause Analysis
 
-### Root Cause Analysis
-The Contact page at `/contact` is crashing with a `TypeError: i.find is not a function` error. After analyzing the code, I identified the problem:
+After thoroughly reviewing the codebase, there are **two separate problems**:
 
-**The Contact.tsx page has duplicate settings fetching logic** (lines 51-67) that queries `site_settings` directly instead of using the shared `useSiteSettings` hook. This creates a conflict:
+### Problem 1: Admin Cannot Edit Treks (Auth/RLS Issue)
 
-1. The `useSiteSettings` hook (used by Header, Footer, FloatingContactButtons) returns a **processed `SiteSettings` object**
-2. The Contact page queries the same data with the same query key `['site-settings-public']` but expects **raw array data**
-3. When both pages are rendered, React Query may serve cached processed data (object) to the Contact page which then tries to call `.find()` on an object instead of an array - causing the crash
+The `TrekForm.tsx` code is structurally correct — it calls `supabase.from('treks').update(...)`. The issue is **role assignment**. Here is why:
 
-### Solution
-Refactor Contact.tsx to use the shared `useSiteSettings()` hook instead of its own inline query. This ensures:
-- Consistent data format across all components
-- Proper type safety
-- No query key conflicts
+The RLS policies on the `treks` table require:
+- UPDATE: `is_manager()` — which means the user must have `manager` or `super_admin` role in the `user_roles` table
+- DELETE on `trek_images`: `is_manager()` — same
 
----
+The test account `testadmin@sridurgatravels.com` likely exists in `auth.users` but may **not have a role assigned** in the `user_roles` table, causing all UPDATE/DELETE operations to silently fail (the UI shows no error but nothing gets saved).
 
-## Issue 2: SEO Settings in Admin Dashboard
+**Fix**: Verify the test admin's user ID and ensure they have a `super_admin` role in `user_roles`. Also fix a secondary issue — when the Trek Form submits, it calls `supabase.from('trek_images').delete().eq('trek_id', id)` to refresh images. This requires `super_admin` (DELETE on trek_images needs `is_super_admin()`), but the current policy says `is_manager()` for DELETE on trek_images. Let me re-read... actually `trek_images` DELETE policy IS `is_manager()` so that's fine. The issue IS the role.
 
-### Features to Add
-A new "SEO" tab in the admin settings page (`/admin/settings`) with:
+Additionally, I need to verify the actual Supabase session to ensure the authenticated user credentials are being sent with requests properly.
 
-**1. Primary Meta Tags**
-- Site Title (appears in browser tab)
-- Meta Description (max 160 characters, shown in search results)
-- Keywords (comma-separated)
+### Problem 2: Trek Data is Missing Full Content
 
-**2. Open Graph Settings (Social Sharing)**
-- OG Title (for Facebook/LinkedIn shares)
-- OG Description
-- OG Image URL (recommended 1200x630px)
-- OG Type (website, article, etc.)
-
-**3. Twitter Card Settings**
-- Twitter Card Type (summary, summary_large_image)
-- Twitter Site Handle (@username)
-
-**4. Google Search Preview**
-- Live preview showing how the site appears in Google search results
-
-**5. Additional SEO Options**
-- Canonical URL
-- Robots meta tag (index/noindex, follow/nofollow)
+All 16 trek packages exist in the database but only have basic data (name, destination, duration, price). They need full content:
+- Detailed descriptions
+- Highlights (bullet points)
+- Day-by-day itinerary
+- Inclusions list
+- Exclusions list
+- Things to carry list
+- Important notes
 
 ---
 
-## Implementation Steps
+## Implementation Plan
 
-### Step 1: Fix Contact.tsx
-Replace the inline query with the shared `useSiteSettings()` hook:
+### Step 1: Fix the Role Assignment for Test Admin
+- Query the database to find the user ID for `testadmin@sridurgatravels.com`
+- Insert a `super_admin` role into `user_roles` for that user if missing
 
-```text
-Changes to src/pages/Contact.tsx:
-- Remove lines 51-67 (duplicate useQuery and getSetting function)
-- Import and use useSiteSettings() hook
-- Access settings directly: settings?.email, settings?.phones, etc.
-```
+### Step 2: Improve Error Handling in TrekForm
+Currently, when Supabase returns an RLS error, `toast.error('Failed to update trek')` fires but doesn't show the actual error. Update error display to show the actual Supabase error message so admins can diagnose issues.
 
-### Step 2: Add SEO Settings to Admin Dashboard
-Modify `src/pages/admin/settings/SettingsPage.tsx`:
+### Step 3: Populate All 16 Trek Packages with Full Data
+Insert complete data for all trekking packages directly into the database using SQL `UPDATE` statements:
 
-```text
-New state variables for SEO:
-- siteTitle, metaDescription, keywords
-- ogTitle, ogDescription, ogImage, ogType
-- twitterCard, twitterSite
-- canonicalUrl, robotsMeta
+**Packages to update:**
+1. Pondicherry Tour — 2D/1N, ₹5,299
+2. Chikkamagaluru Tour — 2D/1N, ₹4,499
+3. Coorg Tour — 2D/1N, ₹4,499
+4. Wayanad Tour — 2D/1N, ₹5,499
+5. Kodaikanal Tour — 2D/1N, ₹5,499
+6. Ooty Tour — 2D/1N, ₹5,499
+7. Kurinjal Trek — 2D/1N, ₹3,299
+8. Dudhsagar Trek & Dandeli Rafting — 2D/1N, ₹4,999
+9. Gokarna Beach Trek — 2D/1N, ₹3,299
+10. Kodachadri Trek via Hidlumane Falls — 2D/1N, ₹3,299
+11. Gangadikal Trek — 2D/1N, ₹3,299
+12. Kumaraparvatha Trek — 2D/1N, ₹3,299
+13. Kudremukh Trek — 2D/1N, ₹3,899
+14. Nethravathi Trek — 2D/1N, ₹3,899
+15. Bandaje Falls Trek — 2D/1N, ₹3,299
+16. Tadiandamol Trek — 2D/1N, ₹3,299
 
-New tab: "SEO" with icon Search/Globe
-
-New card sections:
-1. Primary Meta Tags card
-2. Open Graph Settings card  
-3. Twitter Card Settings card
-4. Google Preview card (read-only preview)
-5. Advanced SEO card
-
-New save function: saveSeoSettings()
-```
-
-### Step 3: Extend useSiteSettings Hook
-Add SEO fields to the `SiteSettings` interface:
-
-```text
-New fields:
-- siteTitle: string
-- metaDescription: string
-- keywords: string
-- ogTitle: string
-- ogDescription: string
-- ogImage: string
-- ogType: string
-- twitterCard: string
-- twitterSite: string
-- canonicalUrl: string
-- robotsMeta: string
-```
-
-### Step 4: Create SEO Component for Frontend
-Create a new component `src/components/SEOHead.tsx` using `document.head` manipulation or a custom hook to dynamically inject meta tags:
-
-```text
-- Reads SEO settings from useSiteSettings()
-- Updates document.title
-- Creates/updates meta tags in head
-- Handles Open Graph and Twitter tags
-```
-
-### Step 5: Integrate SEO into Layout
-Add SEO component to `Layout.tsx` so it applies to all public pages.
+### Step 4: Improve TrekForm for Better Admin UX
+Minor fixes to the form:
+- Show actual error messages from Supabase (not generic ones)
+- Add a "Save & Continue Editing" button so admins don't navigate away after saving
+- Ensure the form properly reloads after saving when staying on the same page
 
 ---
 
-## Files to be Modified
+## Files to Modify
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/Contact.tsx` | Modify | Replace inline query with useSiteSettings hook |
-| `src/hooks/useSiteSettings.ts` | Modify | Add SEO-related fields to interface and fetching |
-| `src/pages/admin/settings/SettingsPage.tsx` | Modify | Add new SEO tab with all settings fields |
-| `src/components/SEOHead.tsx` | Create | New component for dynamic meta tag injection |
-| `src/components/layout/Layout.tsx` | Modify | Include SEOHead component |
+| Database (`user_roles`) | Data insert | Assign super_admin role to testadmin user |
+| Database (`treks`) | Data update | Populate all 16 treks with full content via SQL |
+| `src/pages/admin/treks/TrekForm.tsx` | Modify | Better error handling, show actual Supabase errors, add "Save & Stay" button |
 
 ---
 
 ## Technical Details
 
-### Contact Page Fix (Critical)
+### Trek Form Error Handling Fix
 ```typescript
-// Before (BROKEN):
-const { data: settings } = useQuery({
-  queryKey: ['site-settings-public'],
-  queryFn: async () => {
-    const { data } = await supabase.from('site_settings').select('key, value');
-    return data; // Returns array
-  },
-});
-const getSetting = (key) => settings.find(s => s.key === key)?.value; // CRASHES if settings is object
+// Before (hides actual error):
+if (error) {
+  toast.error('Failed to update trek');
+  setLoading(false);
+  return;
+}
 
-// After (FIXED):
-const { data: settings } = useSiteSettings();
-const companyEmail = settings?.email || COMPANY_INFO.email;
-const phones = settings?.phones || COMPANY_INFO.phones;
+// After (shows actual error for debugging):
+if (error) {
+  toast.error(`Failed to update trek: ${error.message}`);
+  console.error('Trek update error:', error);
+  setLoading(false);
+  return;
+}
 ```
 
-### SEO Settings State Structure
-```typescript
-// New state in SettingsPage.tsx
-const [siteTitle, setSiteTitle] = useState('Sri Durga Travels');
-const [metaDescription, setMetaDescription] = useState('');
-const [keywords, setKeywords] = useState('');
-const [ogTitle, setOgTitle] = useState('');
-const [ogDescription, setOgDescription] = useState('');
-const [ogImage, setOgImage] = useState('');
-const [twitterCard, setTwitterCard] = useState('summary_large_image');
-const [canonicalUrl, setCanonicalUrl] = useState('');
-const [robotsMeta, setRobotsMeta] = useState('index, follow');
+### SQL Data Update Pattern for Each Trek
+```sql
+UPDATE treks SET
+  description = '...',
+  highlights = '["item1", "item2"]'::jsonb,
+  itinerary = '[{"day": 1, "title": "...", "description": "..."}]'::jsonb,
+  inclusions = '["item1", "item2"]'::jsonb,
+  exclusions = '["item1", "item2"]'::jsonb,
+  things_to_carry = '["item1", "item2"]'::jsonb,
+  important_notes = '...'
+WHERE name = 'Trek Name';
 ```
 
-### SEOHead Component Logic
-```typescript
-// Uses useEffect to update document head
-useEffect(() => {
-  document.title = settings?.siteTitle || 'Sri Durga Travels';
-  
-  // Update or create meta tags
-  updateMetaTag('description', settings?.metaDescription);
-  updateMetaTag('keywords', settings?.keywords);
-  updateMetaTag('og:title', settings?.ogTitle || settings?.siteTitle);
-  // ... etc
-}, [settings]);
+### Role Assignment SQL
+```sql
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'super_admin'
+FROM auth.users
+WHERE email = 'testadmin@sridurgatravels.com'
+ON CONFLICT DO NOTHING;
 ```
 
 ---
 
 ## Expected Outcome
-1. Contact page loads without crashing
-2. Admin can configure all SEO settings from `/admin/settings`
-3. SEO meta tags are dynamically applied across the entire website
-4. Google/social previews show properly configured information
+1. Admin can login with `testadmin@sridurgatravels.com` / `TestAdmin123!` and successfully edit, update, and delete any trek
+2. All 16 trek packages will have complete descriptions, itineraries, inclusions, exclusions, highlights, and things-to-carry
+3. Trek detail pages on the public site will show rich, full content for every package
+4. Error messages in the admin form will be informative if anything goes wrong
