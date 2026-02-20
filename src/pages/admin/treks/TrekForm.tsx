@@ -239,15 +239,22 @@ export default function TrekForm() {
         .eq('id', id);
 
       if (error) {
-        toast.error('Failed to update trek');
+        toast.error(`Failed to update trek: ${error.message}`);
+        console.error('Trek update error:', error);
         setLoading(false);
         return;
       }
 
-      // Update images
-      await supabase.from('trek_images').delete().eq('trek_id', id);
+      // Update images - delete existing and re-insert
+      const { error: deleteImgError } = await supabase.from('trek_images').delete().eq('trek_id', id);
+      if (deleteImgError) {
+        console.error('Trek images delete error:', deleteImgError);
+        toast.error(`Image update failed: ${deleteImgError.message}`);
+        setLoading(false);
+        return;
+      }
       if (images.length > 0) {
-        await supabase.from('trek_images').insert(
+        const { error: insertImgError } = await supabase.from('trek_images').insert(
           images.map((img, i) => ({
             trek_id: id,
             url: img.url,
@@ -255,9 +262,14 @@ export default function TrekForm() {
             display_order: i,
           }))
         );
+        if (insertImgError) {
+          console.error('Trek images insert error:', insertImgError);
+        }
       }
 
-      toast.success('Trek updated successfully');
+      toast.success('Trek updated successfully!');
+      setLoading(false);
+      return; // Stay on page after save
     } else {
       const { data: newTrek, error } = await supabase
         .from('treks')
@@ -266,7 +278,8 @@ export default function TrekForm() {
         .single();
 
       if (error || !newTrek) {
-        toast.error('Failed to create trek');
+        toast.error(`Failed to create trek: ${error?.message || 'Unknown error'}`);
+        console.error('Trek create error:', error);
         setLoading(false);
         return;
       }
