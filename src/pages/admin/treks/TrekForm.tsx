@@ -269,7 +269,7 @@ export default function TrekForm() {
 
       toast.success('Trek updated successfully!');
       setLoading(false);
-      return; // Stay on page after save
+      navigate('/admin/treks'); // Go back to list
     } else {
       const { data: newTrek, error } = await supabase
         .from('treks')
@@ -296,11 +296,11 @@ export default function TrekForm() {
         );
       }
 
-      toast.success('Trek created successfully');
+      toast.success('Trek created successfully!');
+      navigate(`/admin/treks/${newTrek.id}`);
     }
 
     setLoading(false);
-    navigate('/admin/treks');
   };
 
   const ListEditor = ({
@@ -741,9 +741,27 @@ export default function TrekForm() {
             <Button type="button" variant="outline" onClick={() => navigate('/admin/treks')}>
               Cancel
             </Button>
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={loading}
+                onClick={async () => {
+                  const isValid = await form.trigger();
+                  if (isValid) {
+                    const values = form.getValues();
+                    await onSubmit(values);
+                    await fetchTrek(); // Reload data
+                  }
+                }}
+              >
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Save & Continue Editing
+              </Button>
+            )}
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isEditing ? 'Update Trek' : 'Create Trek'}
+              {isEditing ? 'Save & Go Back' : 'Create Trek'}
             </Button>
           </div>
         </form>
