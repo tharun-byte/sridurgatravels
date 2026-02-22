@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { TREK_DIFFICULTIES, DEFAULT_TREKS } from '@/lib/constants';
 import type { Trek, TrekDifficulty } from '@/types/database';
-import { Clock, Mountain, MapPin, IndianRupee, Check, X, ArrowLeft, Backpack } from 'lucide-react';
+import { Clock, Mountain, MapPin, IndianRupee, Check, X, ArrowLeft, Backpack, Calendar, Info, Star } from 'lucide-react';
 
 const difficultyColors: Record<TrekDifficulty, string> = {
   easy: 'bg-success text-success-foreground',
@@ -24,7 +25,6 @@ export default function TrekDetail() {
   const { data: trek, isLoading } = useQuery({
     queryKey: ['trek', id],
     queryFn: async () => {
-      // Check if it's a default trek
       if (id?.startsWith('default-')) {
         const index = parseInt(id.replace('default-', ''));
         const t = DEFAULT_TREKS[index];
@@ -129,46 +129,28 @@ export default function TrekDetail() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Quick Info */}
+          <div className="lg:col-span-2 space-y-10">
+            {/* Quick Info Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <Clock className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground">Duration</p>
-                  <p className="font-semibold">{trek.duration}</p>
-                </CardContent>
-              </Card>
-              {trek.altitude && (
-                <Card>
+              {[
+                { icon: Clock, label: 'Duration', value: trek.duration, show: true },
+                { icon: Mountain, label: 'Altitude', value: trek.altitude, show: !!trek.altitude },
+                { icon: MapPin, label: 'Distance', value: trek.distance, show: !!trek.distance },
+                { icon: IndianRupee, label: 'Price/Person', value: `₹${trek.price_per_person.toLocaleString('en-IN')}`, show: true },
+              ].filter(c => c.show).map((card, i) => (
+                <Card key={i} className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-border/50 hover:border-primary/30">
                   <CardContent className="pt-4 text-center">
-                    <Mountain className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <p className="text-xs text-muted-foreground">Altitude</p>
-                    <p className="font-semibold">{trek.altitude}</p>
+                    <card.icon className="h-6 w-6 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform duration-300" />
+                    <p className="text-xs text-muted-foreground">{card.label}</p>
+                    <p className="font-semibold">{card.value}</p>
                   </CardContent>
                 </Card>
-              )}
-              {trek.distance && (
-                <Card>
-                  <CardContent className="pt-4 text-center">
-                    <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <p className="text-xs text-muted-foreground">Distance</p>
-                    <p className="font-semibold">{trek.distance}</p>
-                  </CardContent>
-                </Card>
-              )}
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <IndianRupee className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground">Price/Person</p>
-                  <p className="font-semibold">₹{trek.price_per_person.toLocaleString('en-IN')}</p>
-                </CardContent>
-              </Card>
+              ))}
             </div>
 
             {/* Description */}
             {trek.description && (
-              <div>
+              <div className="animate-fade-in">
                 <h2 className="text-2xl font-heading font-bold mb-4">About This Trek</h2>
                 <p className="text-muted-foreground leading-relaxed">{trek.description}</p>
               </div>
@@ -177,14 +159,60 @@ export default function TrekDetail() {
             {/* Highlights */}
             {trek.highlights && trek.highlights.length > 0 && (
               <div>
-                <h2 className="text-2xl font-heading font-bold mb-4">Highlights</h2>
+                <h2 className="text-2xl font-heading font-bold mb-5 flex items-center gap-2">
+                  <Star className="h-6 w-6 text-primary" /> Highlights
+                </h2>
                 <div className="grid md:grid-cols-2 gap-3">
                   {trek.highlights.map((highlight, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg">
-                      <Check className="h-5 w-5 text-success flex-shrink-0" />
-                      <span>{highlight}</span>
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-primary/5 hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                      style={{ animationDelay: `${index * 80}ms` }}
+                    >
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm">{highlight}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Itinerary */}
+            {trek.itinerary && trek.itinerary.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-heading font-bold mb-5 flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-primary" /> Day-wise Itinerary
+                </h2>
+                <div className="relative pl-6 border-l-2 border-primary/20">
+                  <Accordion type="single" collapsible defaultValue="day-0" className="space-y-3">
+                    {trek.itinerary.map((day, index) => (
+                      <AccordionItem
+                        key={index}
+                        value={`day-${index}`}
+                        className="border rounded-xl overflow-hidden bg-card/50 backdrop-blur-sm hover:shadow-md transition-all duration-300 relative"
+                      >
+                        {/* Timeline dot */}
+                        <div className="absolute -left-[calc(1.5rem+5px)] top-4 w-3 h-3 rounded-full bg-primary border-2 border-background" />
+                        <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30">
+                          <div className="flex items-center gap-3 text-left">
+                            <span className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center">
+                              Day {day.day}
+                            </span>
+                            <span className="font-semibold text-sm">{day.title}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="pl-[calc(2.5rem+0.75rem)] space-y-2 text-sm text-muted-foreground leading-relaxed">
+                            {day.description.split('\n').map((line, i) => (
+                              <p key={i}>{line}</p>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
               </div>
             )}
@@ -192,14 +220,17 @@ export default function TrekDetail() {
             {/* Inclusions & Exclusions */}
             <div className="grid md:grid-cols-2 gap-6">
               {trek.inclusions && trek.inclusions.length > 0 && (
-                <Card className="border-success/30">
+                <Card className="overflow-hidden border-border/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="h-1 bg-gradient-to-r from-success to-success/50" />
                   <CardHeader>
-                    <CardTitle className="text-lg text-success">What's Included</CardTitle>
+                    <CardTitle className="text-lg text-success flex items-center gap-2">
+                      <Check className="h-5 w-5" /> What's Included
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-2.5">
                     {trek.inclusions.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-success flex-shrink-0" />
+                      <div key={index} className="flex items-start gap-2.5 text-sm hover:translate-x-1 transition-transform duration-200">
+                        <Check className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -208,14 +239,17 @@ export default function TrekDetail() {
               )}
 
               {trek.exclusions && trek.exclusions.length > 0 && (
-                <Card className="border-destructive/30">
+                <Card className="overflow-hidden border-border/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="h-1 bg-gradient-to-r from-destructive to-destructive/50" />
                   <CardHeader>
-                    <CardTitle className="text-lg text-destructive">What's Not Included</CardTitle>
+                    <CardTitle className="text-lg text-destructive flex items-center gap-2">
+                      <X className="h-5 w-5" /> What's Not Included
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-2.5">
                     {trek.exclusions.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <X className="h-4 w-4 text-destructive flex-shrink-0" />
+                      <div key={index} className="flex items-start gap-2.5 text-sm hover:translate-x-1 transition-transform duration-200">
+                        <X className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -226,21 +260,36 @@ export default function TrekDetail() {
 
             {/* Things to Carry */}
             {trek.things_to_carry && trek.things_to_carry.length > 0 && (
-              <Card className="border-warning/30">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Backpack className="h-5 w-5 text-warning" />
-                    Things to Carry
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-2">
-                    {trek.things_to_carry.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-warning flex-shrink-0" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
+              <div>
+                <h2 className="text-2xl font-heading font-bold mb-5 flex items-center gap-2">
+                  <Backpack className="h-6 w-6 text-warning" /> Things to Carry
+                </h2>
+                <div className="flex flex-wrap gap-2.5">
+                  {trek.things_to_carry.map((item, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-warning/30 bg-warning/5 text-sm hover:bg-warning/15 hover:scale-105 hover:shadow-sm transition-all duration-200 cursor-default"
+                    >
+                      <Check className="h-3.5 w-3.5 text-warning" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Important Notes */}
+            {trek.important_notes && (
+              <Card className="border-l-4 border-l-primary bg-primary/5 border-border/50">
+                <CardContent className="flex gap-4 pt-6">
+                  <Info className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-heading font-bold text-lg mb-2">Important Notes</h3>
+                    <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
+                      {trek.important_notes.split('\n').map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -250,7 +299,7 @@ export default function TrekDetail() {
           {/* Sidebar - Booking Card */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
-              <Card className="border-primary/30">
+              <Card className="border-primary/30 hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="pt-6 space-y-4">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">Starting from</p>
