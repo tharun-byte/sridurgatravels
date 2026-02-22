@@ -1,131 +1,116 @@
 
-# Plan: Fix Admin Trek Editing & Populate All Trek Packages with Full Content
 
-## Root Cause Analysis
+# Plan: Add Itinerary & Important Notes + Redesign Trek Detail Sections
 
-After thoroughly reviewing the codebase, there are **two separate problems**:
+## Problem Identified
 
-### Problem 1: Admin Cannot Edit Treks (Auth/RLS Issue)
+The `TrekDetail.tsx` page is **missing two sections entirely**:
+1. **Itinerary** -- the data exists in the database (day-wise breakdown with titles and descriptions) but is never rendered on the page
+2. **Important Notes** -- also stored in the database but has no UI section
 
-The `TrekForm.tsx` code is structurally correct — it calls `supabase.from('treks').update(...)`. The issue is **role assignment**. Here is why:
+Additionally, the existing sections (Highlights, Inclusions, Exclusions, Things to Carry) use a basic card layout that needs a modern refresh.
 
-The RLS policies on the `treks` table require:
-- UPDATE: `is_manager()` — which means the user must have `manager` or `super_admin` role in the `user_roles` table
-- DELETE on `trek_images`: `is_manager()` — same
+## What Will Change
 
-The test account `testadmin@sridurgatravels.com` likely exists in `auth.users` but may **not have a role assigned** in the `user_roles` table, causing all UPDATE/DELETE operations to silently fail (the UI shows no error but nothing gets saved).
+### 1. Add Missing Sections
 
-**Fix**: Verify the test admin's user ID and ensure they have a `super_admin` role in `user_roles`. Also fix a secondary issue — when the Trek Form submits, it calls `supabase.from('trek_images').delete().eq('trek_id', id)` to refresh images. This requires `super_admin` (DELETE on trek_images needs `is_super_admin()`), but the current policy says `is_manager()` for DELETE on trek_images. Let me re-read... actually `trek_images` DELETE policy IS `is_manager()` so that's fine. The issue IS the role.
+**Itinerary Section** -- A vertical timeline-style layout showing each day (Day 0 for pickup points, Day 1, Day 2, etc.) with titles and descriptions. Each day will be an expandable accordion item so users can browse without scrolling through walls of text.
 
-Additionally, I need to verify the actual Supabase session to ensure the authenticated user credentials are being sent with requests properly.
+**Important Notes Section** -- A highlighted callout box with an alert/info icon displaying the admin-entered notes text.
 
-### Problem 2: Trek Data is Missing Full Content
+### 2. Redesign Existing Sections
 
-All 16 trek packages exist in the database but only have basic data (name, destination, duration, price). They need full content:
-- Detailed descriptions
-- Highlights (bullet points)
-- Day-by-day itinerary
-- Inclusions list
-- Exclusions list
-- Things to carry list
-- Important notes
+All sections will get a cohesive modern treatment:
 
----
+- **Highlights** -- Glassmorphism cards with hover glow effects, staggered fade-in animations, and numbered indicators instead of plain checkmarks
+- **Inclusions / Exclusions** -- Side-by-side cards with gradient top borders (green for included, red for excluded), hover-lift effects, and smooth entry animations
+- **Things to Carry** -- Grid of pill-style badges with hover scale effects instead of a plain list
+- **Quick Info Cards** -- Add hover-glow and subtle scale animations to the stats cards at the top
+- **Itinerary (new)** -- Accordion-based timeline with a vertical line connector, day number circles, and smooth expand/collapse animations
+- **Important Notes (new)** -- Warning-style callout card with left border accent and info icon
 
-## Implementation Plan
+### 3. Animation Details
 
-### Step 1: Fix the Role Assignment for Test Admin
-- Query the database to find the user ID for `testadmin@sridurgatravels.com`
-- Insert a `super_admin` role into `user_roles` for that user if missing
-
-### Step 2: Improve Error Handling in TrekForm
-Currently, when Supabase returns an RLS error, `toast.error('Failed to update trek')` fires but doesn't show the actual error. Update error display to show the actual Supabase error message so admins can diagnose issues.
-
-### Step 3: Populate All 16 Trek Packages with Full Data
-Insert complete data for all trekking packages directly into the database using SQL `UPDATE` statements:
-
-**Packages to update:**
-1. Pondicherry Tour — 2D/1N, ₹5,299
-2. Chikkamagaluru Tour — 2D/1N, ₹4,499
-3. Coorg Tour — 2D/1N, ₹4,499
-4. Wayanad Tour — 2D/1N, ₹5,499
-5. Kodaikanal Tour — 2D/1N, ₹5,499
-6. Ooty Tour — 2D/1N, ₹5,499
-7. Kurinjal Trek — 2D/1N, ₹3,299
-8. Dudhsagar Trek & Dandeli Rafting — 2D/1N, ₹4,999
-9. Gokarna Beach Trek — 2D/1N, ₹3,299
-10. Kodachadri Trek via Hidlumane Falls — 2D/1N, ₹3,299
-11. Gangadikal Trek — 2D/1N, ₹3,299
-12. Kumaraparvatha Trek — 2D/1N, ₹3,299
-13. Kudremukh Trek — 2D/1N, ₹3,899
-14. Nethravathi Trek — 2D/1N, ₹3,899
-15. Bandaje Falls Trek — 2D/1N, ₹3,299
-16. Tadiandamol Trek — 2D/1N, ₹3,299
-
-### Step 4: Improve TrekForm for Better Admin UX
-Minor fixes to the form:
-- Show actual error messages from Supabase (not generic ones)
-- Add a "Save & Continue Editing" button so admins don't navigate away after saving
-- Ensure the form properly reloads after saving when staying on the same page
-
----
-
-## Files to Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| Database (`user_roles`) | Data insert | Assign super_admin role to testadmin user |
-| Database (`treks`) | Data update | Populate all 16 treks with full content via SQL |
-| `src/pages/admin/treks/TrekForm.tsx` | Modify | Better error handling, show actual Supabase errors, add "Save & Stay" button |
+- Sections will use staggered `animate-fade-in` on scroll entry
+- Cards use `card-hover` and `hover-lift` utility classes already defined in the CSS
+- Accordion uses existing `accordion-down` / `accordion-up` animations from the Radix accordion component
+- Interactive hover effects: scale, glow, and shadow transitions
 
 ---
 
 ## Technical Details
 
-### Trek Form Error Handling Fix
+### File Modified
+
+| File | Change |
+|------|--------|
+| `src/pages/TrekDetail.tsx` | Add Itinerary and Important Notes sections; redesign all content sections with modern styling and animations |
+
+### New Imports Needed
+
 ```typescript
-// Before (hides actual error):
-if (error) {
-  toast.error('Failed to update trek');
-  setLoading(false);
-  return;
-}
-
-// After (shows actual error for debugging):
-if (error) {
-  toast.error(`Failed to update trek: ${error.message}`);
-  console.error('Trek update error:', error);
-  setLoading(false);
-  return;
-}
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Calendar, AlertTriangle, Star, Sparkles, Info } from 'lucide-react';
 ```
 
-### SQL Data Update Pattern for Each Trek
-```sql
-UPDATE treks SET
-  description = '...',
-  highlights = '["item1", "item2"]'::jsonb,
-  itinerary = '[{"day": 1, "title": "...", "description": "..."}]'::jsonb,
-  inclusions = '["item1", "item2"]'::jsonb,
-  exclusions = '["item1", "item2"]'::jsonb,
-  things_to_carry = '["item1", "item2"]'::jsonb,
-  important_notes = '...'
-WHERE name = 'Trek Name';
+### Section Ordering (top to bottom in main content area)
+
+1. Quick Info Cards (Duration, Altitude, Distance, Price) -- with hover effects
+2. About This Trek (description)
+3. Highlights -- redesigned grid with glassmorphism
+4. Itinerary -- **NEW** accordion timeline
+5. Inclusions and Exclusions -- redesigned side-by-side cards
+6. Things to Carry -- redesigned pill/badge grid
+7. Important Notes -- **NEW** callout card
+
+### Itinerary Rendering Logic
+
+```typescript
+{trek.itinerary && trek.itinerary.length > 0 && (
+  <div>
+    <h2>Day-wise Itinerary</h2>
+    <Accordion type="single" collapsible defaultValue="day-0">
+      {trek.itinerary.map((day, index) => (
+        <AccordionItem key={index} value={`day-${index}`}>
+          <AccordionTrigger>
+            <span className="day-badge">Day {day.day}</span>
+            <span>{day.title}</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            {/* Render description with line breaks preserved */}
+            {day.description.split('\n').map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  </div>
+)}
 ```
 
-### Role Assignment SQL
-```sql
-INSERT INTO public.user_roles (user_id, role)
-SELECT id, 'super_admin'
-FROM auth.users
-WHERE email = 'testadmin@sridurgatravels.com'
-ON CONFLICT DO NOTHING;
+### Important Notes Rendering Logic
+
+```typescript
+{trek.important_notes && (
+  <Card className="border-l-4 border-l-primary bg-primary/5">
+    <CardContent className="flex gap-3 pt-5">
+      <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+      <div>
+        <h3 className="font-semibold mb-1">Important Notes</h3>
+        <p className="text-sm text-muted-foreground">{trek.important_notes}</p>
+      </div>
+    </CardContent>
+  </Card>
+)}
 ```
 
----
+### Design Enhancements Applied to Each Section
 
-## Expected Outcome
-1. Admin can login with `testadmin@sridurgatravels.com` / `TestAdmin123!` and successfully edit, update, and delete any trek
-2. All 16 trek packages will have complete descriptions, itineraries, inclusions, exclusions, highlights, and things-to-carry
-3. Trek detail pages on the public site will show rich, full content for every package
-4. Error messages in the admin form will be informative if anything goes wrong
+- **Quick Info Cards**: Add `group hover-lift` classes, icon gets `group-hover:scale-110 transition-transform`
+- **Highlights**: Each item gets `hover:bg-primary/5 transition-all duration-300 hover:shadow-md` with a numbered circle badge
+- **Inclusions Card**: Green gradient top border, `hover-lift` class, items get `hover:translate-x-1 transition-transform`
+- **Exclusions Card**: Red gradient top border, same hover treatment
+- **Things to Carry**: Items rendered as interactive badges/pills with `hover:scale-105` and `hover:bg-warning/20`
+- **Itinerary Accordion**: Custom styled with day-number circles connected by a vertical timeline line, smooth open/close animation
+
