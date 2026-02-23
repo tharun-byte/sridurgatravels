@@ -551,8 +551,10 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          after_hrs_driver_bata: number | null
           base_price: number
           capacity: number
+          comfort: string | null
           created_at: string
           description: string | null
           driver_bata: number | null
@@ -563,14 +565,20 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_featured: boolean | null
+          local_package_price: number | null
           name: string
           outstation_allowance: string | null
+          outstation_per_km: number | null
+          trip_type: string | null
           type: Database["public"]["Enums"]["vehicle_type"]
           updated_at: string
+          why_choose: Json | null
         }
         Insert: {
+          after_hrs_driver_bata?: number | null
           base_price: number
           capacity: number
+          comfort?: string | null
           created_at?: string
           description?: string | null
           driver_bata?: number | null
@@ -581,14 +589,20 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          local_package_price?: number | null
           name: string
           outstation_allowance?: string | null
+          outstation_per_km?: number | null
+          trip_type?: string | null
           type: Database["public"]["Enums"]["vehicle_type"]
           updated_at?: string
+          why_choose?: Json | null
         }
         Update: {
+          after_hrs_driver_bata?: number | null
           base_price?: number
           capacity?: number
+          comfort?: string | null
           created_at?: string
           description?: string | null
           driver_bata?: number | null
@@ -599,10 +613,14 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          local_package_price?: number | null
           name?: string
           outstation_allowance?: string | null
+          outstation_per_km?: number | null
+          trip_type?: string | null
           type?: Database["public"]["Enums"]["vehicle_type"]
           updated_at?: string
+          why_choose?: Json | null
         }
         Relationships: []
       }

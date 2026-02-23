@@ -19,6 +19,12 @@ export interface Vehicle {
   full_day_price: number | null;
   outstation_allowance: string | null;
   driver_bata: number | null;
+  local_package_price: number | null;
+  after_hrs_driver_bata: number | null;
+  outstation_per_km: number | null;
+  comfort: string | null;
+  trip_type: string | null;
+  why_choose: string[];
   is_featured: boolean;
   is_active: boolean;
   created_at: string;

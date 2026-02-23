@@ -30,6 +30,7 @@ const Rentals = () => {
         ...v, 
         images: v.vehicle_images,
         features: Array.isArray(v.features) ? v.features as string[] : [],
+        why_choose: Array.isArray(v.why_choose) ? v.why_choose as string[] : [],
       })) as Vehicle[]);
     } else {
       // Use defaults
@@ -38,6 +39,12 @@ const Rentals = () => {
         ...v,
         type: v.type as VehicleType,
         description: v.description || null,
+        local_package_price: null,
+        after_hrs_driver_bata: null,
+        outstation_per_km: null,
+        comfort: null,
+        trip_type: null,
+        why_choose: [],
         is_featured: true,
         is_active: true,
         created_at: new Date().toISOString(),
