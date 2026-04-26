@@ -37,6 +37,16 @@ import { Loader2, Eye, Trash2, Mail, MailOpen, Search, Reply } from 'lucide-reac
 
 type ContactMessage = Tables<'contact_messages'>;
 
+const SUBJECT_LABELS: Record<string, string> = {
+  bus_booking: 'Bus Booking',
+  car_booking: 'Car Booking',
+  trek_booking: 'Trekking Services',
+  general: 'General Inquiry',
+};
+
+const getSubjectLabel = (subject: string) =>
+  SUBJECT_LABELS[subject] ?? subject;
+
 export default function MessageList() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -195,7 +205,7 @@ export default function MessageList() {
                       </TableCell>
                       <TableCell>{message.email}</TableCell>
                       <TableCell className={message.is_read ? '' : 'font-medium'}>
-                        {message.subject}
+                        {getSubjectLabel(message.subject)}
                       </TableCell>
                       <TableCell>{format(new Date(message.created_at), 'MMM dd, yyyy')}</TableCell>
                       <TableCell className="text-right">
@@ -237,7 +247,7 @@ export default function MessageList() {
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedMessage?.subject}</DialogTitle>
+            <DialogTitle>{selectedMessage ? getSubjectLabel(selectedMessage.subject) : ''}</DialogTitle>
             <DialogDescription>
               From {selectedMessage?.name} on {selectedMessage && format(new Date(selectedMessage.created_at), 'MMMM dd, yyyy \'at\' h:mm a')}
             </DialogDescription>
