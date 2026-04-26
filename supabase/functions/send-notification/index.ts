@@ -495,6 +495,15 @@ Deno.serve(async (req: Request) => {
     const aiModel        = get('ai_model',           'meta/llama-3.3-70b-instruct')
     const fromEmail      = get('resend_from_email',  'orders@sridurgatravels.com')
 
+    // ⚠️ CRITICAL: Verify all required credentials exist
+    const errors: string[] = []
+    if (!resendApiKey) errors.push('⚠️ RESEND_API_KEY not configured')
+    if (!telegramToken) errors.push('⚠️ TELEGRAM_BOT_TOKEN not configured')
+    if (!telegramChatId) errors.push('⚠️ TELEGRAM_CHAT_ID not configured')
+    if (errors.length > 0) {
+      console.warn('NOTIFICATION CONFIG ISSUES:', errors.join(', '))
+    }
+
     // Generate content (LLM or fallback)
     let content
     if (nvidiaApiKey) {
@@ -505,37 +514,77 @@ Deno.serve(async (req: Request) => {
         content = getFallbackContent(type, data)
       }
     } else {
+      console.warn('NVIDIA_API_KEY not configured, using fallback templates')
       content = getFallbackContent(type, data)
     }
 
     const fromField = `Sri Durga Travels <${fromEmail}>`
+    const adminEmail = 'orders@sridurgatravels.com'
 
-    // Fire all notifications in parallel
+    // Fire all notifications in parallel with detailed logging
     const tasks: Promise<void>[] = []
+    const results: { channel: string; status: string; message?: string }[] = []
 
+    // 1. TELEGRAM to Admin
     if (telegramToken && telegramChatId && content.telegramText) {
-      tasks.push(sendTelegram(telegramToken, telegramChatId, content.telegramText))
+      tasks.push(
+        sendTelegram(telegramToken, telegramChatId, content.telegramText)
+          .then(() => results.push({ channel: 'Telegram', status: 'SENT ✅' }))
+          .catch((err) => {
+            console.error('Telegram send failed:', err)
+            results.push({ channel: 'Telegram', status: 'FAILED ❌', message: String(err) })
+          })
+      )
+    } else {
+      results.push({ channel: 'Telegram', status: 'SKIPPED ⏭️', message: 'Missing token or chat ID' })
     }
 
+    // 2. ADMIN EMAIL (MANDATORY — always send to orders@sridurgatravels.com)
     if (resendApiKey && content.adminEmailSubject) {
-      tasks.push(sendEmail(resendApiKey, {
-        from: fromField,
-        to: ['orders@sridurgatravels.com'],
-        subject: content.adminEmailSubject,
-        html: wrapInTemplate(content.adminEmailBody),
-      }))
+      tasks.push(
+        sendEmail(resendApiKey, {
+          from: fromField,
+          to: [adminEmail],
+          subject: content.adminEmailSubject,
+          html: wrapInTemplate(content.adminEmailBody),
+        })
+          .then(() => results.push({ channel: `Email → ${adminEmail}`, status: 'SENT ✅' }))
+          .catch((err) => {
+            console.error('Admin email send failed:', err)
+            results.push({ channel: `Email → ${adminEmail}`, status: 'FAILED ❌', message: String(err) })
+          })
+      )
+    } else if (!resendApiKey) {
+      results.push({ channel: `Email → ${adminEmail}`, status: 'FAILED ❌', message: 'RESEND_API_KEY missing!' })
     }
 
+    // 3. CUSTOMER EMAIL (optional — only if they provided email)
     if (resendApiKey && data.userEmail && content.userEmailSubject) {
-      tasks.push(sendEmail(resendApiKey, {
-        from: fromField,
-        to: [data.userEmail as string],
-        subject: content.userEmailSubject,
-        html: wrapInTemplate(content.userEmailBody),
-      }))
+      tasks.push(
+        sendEmail(resendApiKey, {
+          from: fromField,
+          to: [data.userEmail as string],
+          subject: content.userEmailSubject,
+          html: wrapInTemplate(content.userEmailBody),
+        })
+          .then(() => results.push({ channel: `Email → ${data.userEmail}`, status: 'SENT ✅' }))
+          .catch((err) => {
+            console.error('Customer email send failed:', err)
+            results.push({ channel: `Email → ${data.userEmail}`, status: 'FAILED ❌', message: String(err) })
+          })
+      )
+    } else if (!resendApiKey && data.userEmail) {
+      results.push({ channel: `Email → ${data.userEmail}`, status: 'FAILED ❌', message: 'RESEND_API_KEY missing!' })
     }
 
     await Promise.allSettled(tasks)
+
+    // Log detailed notification results
+    console.log(`\n📊 NOTIFICATION DELIVERY REPORT\n${'='.repeat(50)}\n`)
+    console.log(`Event Type: ${type}\nRequest Data: ${JSON.stringify(data, null, 2)}\n`)
+    console.log('Delivery Channels:')
+    results.forEach(r => console.log(`  ${r.channel.padEnd(35)} → ${r.status}${r.message ? ` (${r.message})` : ''}`))
+    console.log(`\n${'='.repeat(50)}\n`)
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
