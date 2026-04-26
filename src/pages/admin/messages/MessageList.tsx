@@ -21,6 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Loader2, Eye, Trash2, Mail, MailOpen, Search, Reply } from 'lucide-react';
@@ -32,6 +42,7 @@ export default function MessageList() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['admin-messages'],
@@ -137,90 +148,88 @@ export default function MessageList() {
       {/* Messages Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12"></TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMessages?.length === 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No messages found
-                  </TableCell>
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredMessages?.map((message) => (
-                  <TableRow 
-                    key={message.id} 
-                    className={message.is_read ? '' : 'bg-primary/5'}
-                  >
-                    <TableCell>
-                      <button
-                        onClick={() => toggleReadMutation.mutate({ id: message.id, isRead: !message.is_read })}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        {message.is_read ? (
-                          <MailOpen className="h-4 w-4" />
-                        ) : (
-                          <Mail className="h-4 w-4 text-primary" />
-                        )}
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className={message.is_read ? '' : 'font-semibold'}>{message.name}</p>
-                        {message.phone && (
-                          <p className="text-sm text-muted-foreground">{message.phone}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{message.email}</TableCell>
-                    <TableCell className={message.is_read ? '' : 'font-medium'}>
-                      {message.subject}
-                    </TableCell>
-                    <TableCell>{format(new Date(message.created_at), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openMessageDetails(message)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleReply(message.email, message.subject)}
-                        >
-                          <Reply className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this message?')) {
-                              deleteMessageMutation.mutate(message.id);
-                            }
-                          }}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {filteredMessages?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No messages found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredMessages?.map((message) => (
+                    <TableRow 
+                      key={message.id} 
+                      className={message.is_read ? '' : 'bg-primary/5'}
+                    >
+                      <TableCell>
+                        <button
+                          onClick={() => toggleReadMutation.mutate({ id: message.id, isRead: !message.is_read })}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          {message.is_read ? (
+                            <MailOpen className="h-4 w-4" />
+                          ) : (
+                            <Mail className="h-4 w-4 text-primary" />
+                          )}
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className={message.is_read ? '' : 'font-semibold'}>{message.name}</p>
+                          {message.phone && (
+                            <p className="text-sm text-muted-foreground">{message.phone}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{message.email}</TableCell>
+                      <TableCell className={message.is_read ? '' : 'font-medium'}>
+                        {message.subject}
+                      </TableCell>
+                      <TableCell>{format(new Date(message.created_at), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openMessageDetails(message)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleReply(message.email, message.subject)}
+                          >
+                            <Reply className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setMessageToDelete(message.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -270,6 +279,32 @@ export default function MessageList() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Message Alert */}
+      <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this message. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (messageToDelete) {
+                  deleteMessageMutation.mutate(messageToDelete);
+                  setMessageToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

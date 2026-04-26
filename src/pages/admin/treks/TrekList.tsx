@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -48,69 +49,70 @@ interface TrekRow {
 }
 
 export default function TrekList() {
-  const [treks, setTreks] = useState<TrekRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchTreks();
-  }, []);
+  const { data: treks, isLoading: loading } = useQuery({
+    queryKey: ['admin-treks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('treks')
+        .select('id, name, destination, duration, difficulty, price_per_person, is_active, is_featured')
+        .order('created_at', { ascending: false });
 
-  const fetchTreks = async () => {
-    const { data, error } = await supabase
-      .from('treks')
-      .select('id, name, destination, duration, difficulty, price_per_person, is_active, is_featured')
-      .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as TrekRow[];
+    },
+  });
 
-    if (error) {
-      toast.error('Failed to fetch treks');
-    } else {
-      setTreks(data as TrekRow[]);
-    }
-    setLoading(false);
-  };
-
-  const toggleActive = async (id: string, currentValue: boolean) => {
-    const { error } = await supabase
-      .from('treks')
-      .update({ is_active: !currentValue })
-      .eq('id', id);
-
-    if (error) {
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ id, currentValue }: { id: string; currentValue: boolean }) => {
+      const { error } = await supabase
+        .from('treks')
+        .update({ is_active: !currentValue })
+        .eq('id', id);
+      if (error) throw error;
+      return { currentValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-treks'] });
+      toast.success(`Trek ${!data.currentValue ? 'activated' : 'deactivated'}`);
+    },
+    onError: () => {
       toast.error('Failed to update trek');
-    } else {
-      setTreks(treks.map(t => 
-        t.id === id ? { ...t, is_active: !currentValue } : t
-      ));
-      toast.success(`Trek ${!currentValue ? 'activated' : 'deactivated'}`);
-    }
-  };
+    },
+  });
 
-  const toggleFeatured = async (id: string, currentValue: boolean) => {
-    const { error } = await supabase
-      .from('treks')
-      .update({ is_featured: !currentValue })
-      .eq('id', id);
-
-    if (error) {
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ id, currentValue }: { id: string; currentValue: boolean }) => {
+      const { error } = await supabase
+        .from('treks')
+        .update({ is_featured: !currentValue })
+        .eq('id', id);
+      if (error) throw error;
+      return { currentValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-treks'] });
+      toast.success(`Trek ${!data.currentValue ? 'featured' : 'unfeatured'}`);
+    },
+    onError: () => {
       toast.error('Failed to update trek');
-    } else {
-      setTreks(treks.map(t => 
-        t.id === id ? { ...t, is_featured: !currentValue } : t
-      ));
-      toast.success(`Trek ${!currentValue ? 'featured' : 'unfeatured'}`);
-    }
-  };
+    },
+  });
 
-  const deleteTrek = async (id: string) => {
-    const { error } = await supabase.from('treks').delete().eq('id', id);
-
-    if (error) {
-      toast.error('Failed to delete trek');
-    } else {
-      setTreks(treks.filter(t => t.id !== id));
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('treks').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-treks'] });
       toast.success('Trek deleted successfully');
-    }
-  };
+    },
+    onError: () => {
+      toast.error('Failed to delete trek');
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -129,12 +131,12 @@ export default function TrekList() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Treks ({treks.length})</CardTitle>
+          <CardTitle>All Treks ({treks?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p>Loading...</p>
-          ) : treks.length === 0 ? (
+          ) : !treks || treks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">No treks added yet</p>
               <Link to="/admin/treks/new">
@@ -142,90 +144,92 @@ export default function TrekList() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Destination</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Difficulty</TableHead>
-                  <TableHead>Price/Person</TableHead>
-                  <TableHead>Featured</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {treks.map((trek) => (
-                  <TableRow key={trek.id}>
-                    <TableCell className="font-medium">{trek.name}</TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        {trek.destination}
-                      </span>
-                    </TableCell>
-                    <TableCell>{trek.duration}</TableCell>
-                    <TableCell>
-                      <Badge className={difficultyColors[trek.difficulty]}>
-                        {TREK_DIFFICULTIES[trek.difficulty]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center">
-                        <IndianRupee className="h-3 w-3" />
-                        {trek.price_per_person.toLocaleString('en-IN')}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={trek.is_featured}
-                        onCheckedChange={() => toggleFeatured(trek.id, trek.is_featured)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={trek.is_active}
-                        onCheckedChange={() => toggleActive(trek.id, trek.is_active)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link to={`/admin/treks/${trek.id}`}>
-                          <Button variant="ghost" size="icon">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Trek</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{trek.name}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteTrek(trek.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Destination</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Difficulty</TableHead>
+                    <TableHead>Price/Person</TableHead>
+                    <TableHead>Featured</TableHead>
+                    <TableHead>Active</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {treks.map((trek) => (
+                    <TableRow key={trek.id}>
+                      <TableCell className="font-medium">{trek.name}</TableCell>
+                      <TableCell>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          {trek.destination}
+                        </span>
+                      </TableCell>
+                      <TableCell>{trek.duration}</TableCell>
+                      <TableCell>
+                        <Badge className={difficultyColors[trek.difficulty]}>
+                          {TREK_DIFFICULTIES[trek.difficulty]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {trek.price_per_person.toLocaleString('en-IN')}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={trek.is_featured}
+                          onCheckedChange={() => toggleFeaturedMutation.mutate({ id: trek.id, currentValue: trek.is_featured })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={trek.is_active}
+                          onCheckedChange={() => toggleActiveMutation.mutate({ id: trek.id, currentValue: trek.is_active })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link to={`/admin/treks/${trek.id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Trek</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{trek.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMutation.mutate(trek.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

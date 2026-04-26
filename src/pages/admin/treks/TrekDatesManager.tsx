@@ -295,83 +295,85 @@ export default function TrekDatesManager() {
                 </div>
               ) : (
                 <div className="max-h-[400px] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Spots</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {trekDates.map((date) => {
-                        const isPast = isBefore(new Date(date.available_date + 'T00:00:00'), startOfDay(new Date()));
-                        return (
-                          <TableRow key={date.id} className={isPast ? 'opacity-50' : ''}>
-                            <TableCell className="font-medium">
-                              {format(new Date(date.available_date + 'T00:00:00'), 'dd MMM yyyy')}
-                              {isPast && <Badge variant="secondary" className="ml-2 text-xs">Past</Badge>}
-                            </TableCell>
-                            <TableCell>
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {date.current_bookings}/{date.max_participants}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {date.price_override ? (
-                                <span className="flex items-center text-primary">
-                                  <IndianRupee className="h-3 w-3" />
-                                  {date.price_override}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Spots</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {trekDates.map((date) => {
+                          const isPast = isBefore(new Date(date.available_date + 'T00:00:00'), startOfDay(new Date()));
+                          return (
+                            <TableRow key={date.id} className={isPast ? 'opacity-50' : ''}>
+                              <TableCell className="font-medium">
+                                {format(new Date(date.available_date + 'T00:00:00'), 'dd MMM yyyy')}
+                                {isPast && <Badge variant="secondary" className="ml-2 text-xs">Past</Badge>}
+                              </TableCell>
+                              <TableCell>
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  {date.current_bookings}/{date.max_participants}
                                 </span>
-                              ) : (
-                                <span className="text-muted-foreground">Default</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleActiveMutation.mutate({ id: date.id, is_active: date.is_active })}
-                              >
-                                <Badge variant={date.is_active ? 'default' : 'secondary'}>
-                                  {date.is_active ? 'Active' : 'Inactive'}
-                                </Badge>
-                              </Button>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Date</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete this date? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteDateMutation.mutate(date.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                              </TableCell>
+                              <TableCell>
+                                {date.price_override ? (
+                                  <span className="flex items-center text-primary">
+                                    <IndianRupee className="h-3 w-3" />
+                                    {date.price_override}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">Default</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleActiveMutation.mutate({ id: date.id, is_active: date.is_active })}
+                                >
+                                  <Badge variant={date.is_active ? 'default' : 'secondary'}>
+                                    {date.is_active ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                </Button>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Date</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete this date? This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteDateMutation.mutate(date.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               )}
             </CardContent>

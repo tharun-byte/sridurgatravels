@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -40,69 +41,70 @@ interface VehicleRow {
 }
 
 export default function VehicleList() {
-  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
+  const { data: vehicles, isLoading: loading } = useQuery({
+    queryKey: ['admin-vehicles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vehicles')
+        .select('id, name, type, capacity, base_price, is_active, is_featured')
+        .order('created_at', { ascending: false });
 
-  const fetchVehicles = async () => {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('id, name, type, capacity, base_price, is_active, is_featured')
-      .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as VehicleRow[];
+    },
+  });
 
-    if (error) {
-      toast.error('Failed to fetch vehicles');
-    } else {
-      setVehicles(data as VehicleRow[]);
-    }
-    setLoading(false);
-  };
-
-  const toggleActive = async (id: string, currentValue: boolean) => {
-    const { error } = await supabase
-      .from('vehicles')
-      .update({ is_active: !currentValue })
-      .eq('id', id);
-
-    if (error) {
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ id, currentValue }: { id: string; currentValue: boolean }) => {
+      const { error } = await supabase
+        .from('vehicles')
+        .update({ is_active: !currentValue })
+        .eq('id', id);
+      if (error) throw error;
+      return { currentValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vehicles'] });
+      toast.success(`Vehicle ${!data.currentValue ? 'activated' : 'deactivated'}`);
+    },
+    onError: () => {
       toast.error('Failed to update vehicle');
-    } else {
-      setVehicles(vehicles.map(v => 
-        v.id === id ? { ...v, is_active: !currentValue } : v
-      ));
-      toast.success(`Vehicle ${!currentValue ? 'activated' : 'deactivated'}`);
-    }
-  };
+    },
+  });
 
-  const toggleFeatured = async (id: string, currentValue: boolean) => {
-    const { error } = await supabase
-      .from('vehicles')
-      .update({ is_featured: !currentValue })
-      .eq('id', id);
-
-    if (error) {
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ id, currentValue }: { id: string; currentValue: boolean }) => {
+      const { error } = await supabase
+        .from('vehicles')
+        .update({ is_featured: !currentValue })
+        .eq('id', id);
+      if (error) throw error;
+      return { currentValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vehicles'] });
+      toast.success(`Vehicle ${!data.currentValue ? 'featured' : 'unfeatured'}`);
+    },
+    onError: () => {
       toast.error('Failed to update vehicle');
-    } else {
-      setVehicles(vehicles.map(v => 
-        v.id === id ? { ...v, is_featured: !currentValue } : v
-      ));
-      toast.success(`Vehicle ${!currentValue ? 'featured' : 'unfeatured'}`);
-    }
-  };
+    },
+  });
 
-  const deleteVehicle = async (id: string) => {
-    const { error } = await supabase.from('vehicles').delete().eq('id', id);
-
-    if (error) {
-      toast.error('Failed to delete vehicle');
-    } else {
-      setVehicles(vehicles.filter(v => v.id !== id));
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('vehicles').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vehicles'] });
       toast.success('Vehicle deleted successfully');
-    }
-  };
+    },
+    onError: () => {
+      toast.error('Failed to delete vehicle');
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -121,12 +123,12 @@ export default function VehicleList() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Vehicles ({vehicles.length})</CardTitle>
+          <CardTitle>All Vehicles ({vehicles?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p>Loading...</p>
-          ) : vehicles.length === 0 ? (
+          ) : !vehicles || vehicles.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">No vehicles added yet</p>
               <Link to="/admin/vehicles/new">
@@ -134,88 +136,90 @@ export default function VehicleList() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Capacity</TableHead>
-                  <TableHead>Base Price</TableHead>
-                  <TableHead>Featured</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vehicles.map((vehicle) => (
-                  <TableRow key={vehicle.id}>
-                    <TableCell className="font-medium">{vehicle.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {VEHICLE_TYPES[vehicle.type]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {vehicle.capacity}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center">
-                        <IndianRupee className="h-3 w-3" />
-                        {vehicle.base_price.toLocaleString('en-IN')}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={vehicle.is_featured}
-                        onCheckedChange={() => toggleFeatured(vehicle.id, vehicle.is_featured)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={vehicle.is_active}
-                        onCheckedChange={() => toggleActive(vehicle.id, vehicle.is_active)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link to={`/admin/vehicles/${vehicle.id}`}>
-                          <Button variant="ghost" size="icon">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Vehicle</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{vehicle.name}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteVehicle(vehicle.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Capacity</TableHead>
+                    <TableHead>Base Price</TableHead>
+                    <TableHead>Featured</TableHead>
+                    <TableHead>Active</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {vehicles.map((vehicle) => (
+                    <TableRow key={vehicle.id}>
+                      <TableCell className="font-medium">{vehicle.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {VEHICLE_TYPES[vehicle.type]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {vehicle.capacity}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex items-center">
+                          <IndianRupee className="h-3 w-3" />
+                          {vehicle.base_price.toLocaleString('en-IN')}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={vehicle.is_featured}
+                          onCheckedChange={() => toggleFeaturedMutation.mutate({ id: vehicle.id, currentValue: vehicle.is_featured })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={vehicle.is_active}
+                          onCheckedChange={() => toggleActiveMutation.mutate({ id: vehicle.id, currentValue: vehicle.is_active })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link to={`/admin/vehicles/${vehicle.id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Vehicle</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{vehicle.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMutation.mutate(vehicle.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

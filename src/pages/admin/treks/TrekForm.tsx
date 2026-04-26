@@ -263,7 +263,9 @@ export default function TrekForm() {
           }))
         );
         if (insertImgError) {
-          console.error('Trek images insert error:', insertImgError);
+          toast.error(`Failed to save images: ${insertImgError.message}`);
+          setLoading(false);
+          return;
         }
       }
 

@@ -20,6 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Trash2, Edit2, Upload, Image as ImageIcon } from 'lucide-react';
 
@@ -36,6 +46,8 @@ export default function GalleryManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<GalleryImage | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
   const { data: images, isLoading: loadingImages } = useQuery({
     queryKey: ['admin-gallery-images'],
@@ -100,9 +112,10 @@ export default function GalleryManager() {
 
   const updateImageMutation = useMutation({
     mutationFn: async ({ id, caption, categoryId }: { id: string; caption: string; categoryId: string | null }) => {
+      const finalCategoryId = categoryId === 'none' ? null : categoryId;
       const { error } = await supabase
         .from('gallery_images')
-        .update({ caption, category_id: categoryId })
+        .update({ caption, category_id: finalCategoryId })
         .eq('id', id);
       if (error) throw error;
     },
@@ -131,6 +144,7 @@ export default function GalleryManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-gallery-images'] });
       toast({ title: 'Image deleted successfully' });
+      setImageToDelete(null);
     },
     onError: (error: Error) => {
       toast({ title: 'Error deleting image', description: error.message, variant: 'destructive' });
@@ -163,6 +177,7 @@ export default function GalleryManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-gallery-categories'] });
       toast({ title: 'Category deleted successfully' });
+      setCategoryToDelete(null);
     },
     onError: (error: Error) => {
       toast({ title: 'Error deleting category', description: error.message, variant: 'destructive' });
@@ -180,8 +195,9 @@ export default function GalleryManager() {
       }
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      // Reset input value
+      if (e.target) {
+        e.target.value = '';
       }
     }
   };
@@ -189,7 +205,7 @@ export default function GalleryManager() {
   const openEditDialog = (image: GalleryImage) => {
     setEditingImage(image);
     setCaption(image.caption || '');
-    setSelectedCategory(image.category_id || '');
+    setSelectedCategory(image.category_id || 'none');
   };
 
   if (loadingImages || loadingCategories) {
@@ -209,22 +225,27 @@ export default function GalleryManager() {
             <Plus className="h-4 w-4 mr-2" />
             Add Category
           </Button>
-          <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-            {isUploading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            Upload Images
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileUpload}
-          />
+          <div className="relative flex items-center justify-center">
+            <input
+              id="gallery-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+            />
+            <Button disabled={isUploading} asChild>
+              <label htmlFor="gallery-upload" className="cursor-pointer flex items-center">
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                Upload Images
+              </label>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -241,11 +262,7 @@ export default function GalleryManager() {
                 >
                   <span className="text-sm">{category.name}</span>
                   <button
-                    onClick={() => {
-                      if (confirm('Delete this category?')) {
-                        deleteCategoryMutation.mutate(category.id);
-                      }
-                    }}
+                    onClick={() => setCategoryToDelete(category.id)}
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -264,8 +281,10 @@ export default function GalleryManager() {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No images in gallery</p>
-              <Button variant="link" onClick={() => fileInputRef.current?.click()}>
-                Upload your first image
+              <Button variant="link" asChild>
+                <label htmlFor="gallery-upload" className="cursor-pointer">
+                  Upload your first image
+                </label>
               </Button>
             </CardContent>
           </Card>
@@ -289,11 +308,7 @@ export default function GalleryManager() {
                   <Button
                     variant="destructive"
                     size="icon"
-                    onClick={() => {
-                      if (confirm('Delete this image?')) {
-                        deleteImageMutation.mutate(image);
-                      }
-                    }}
+                    onClick={() => setImageToDelete(image)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -332,7 +347,7 @@ export default function GalleryManager() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Category</SelectItem>
+                  <SelectItem value="none">No Category</SelectItem>
                   {categories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
@@ -394,6 +409,56 @@ export default function GalleryManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Category Alert */}
+      <AlertDialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this category.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (categoryToDelete) {
+                  deleteCategoryMutation.mutate(categoryToDelete);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Image Alert */}
+      <AlertDialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this image from the gallery and storage. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (imageToDelete) {
+                  deleteImageMutation.mutate(imageToDelete);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

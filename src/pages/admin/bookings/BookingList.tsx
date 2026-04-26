@@ -29,11 +29,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { Loader2, Eye, Trash2, Search } from 'lucide-react';
+import { Loader2, Eye, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BOOKING_STATUSES } from '@/lib/constants';
+
+const PAGE_SIZE = 50;
 
 type Booking = Tables<'bookings'>;
 type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
@@ -47,24 +59,35 @@ export default function BookingList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
-  const { data: bookings, isLoading } = useQuery({
-    queryKey: ['admin-bookings', statusFilter, typeFilter],
+  const { data: bookingsResult, isLoading } = useQuery({
+    queryKey: ['admin-bookings', statusFilter, typeFilter, page],
     queryFn: async () => {
-      let query = supabase.from('bookings').select('*').order('created_at', { ascending: false });
-      
+      let query = supabase
+        .from('bookings')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter as BookingStatus);
       }
       if (typeFilter !== 'all') {
         query = query.eq('booking_type', typeFilter as 'vehicle' | 'trek');
       }
-      
-      const { data, error } = await query;
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data;
+      return { data: data ?? [], count: count ?? 0 };
     },
+    placeholderData: (prev) => prev,
   });
+
+  const bookings = bookingsResult?.data ?? [];
+  const totalCount = bookingsResult?.count ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: BookingStatus }) => {
@@ -115,7 +138,7 @@ export default function BookingList() {
     },
   });
 
-  const filteredBookings = bookings?.filter((booking) => {
+  const filteredBookings = bookings.filter((booking) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -124,6 +147,11 @@ export default function BookingList() {
       booking.customer_phone.includes(query)
     );
   });
+
+  const handleFilterChange = (setter: (v: string) => void) => (value: string) => {
+    setter(value);
+    setPage(0); // reset to first page on filter change
+  };
 
   const getStatusBadge = (status: BookingStatus) => {
     const statusConfig = BOOKING_STATUSES[status];
@@ -156,7 +184,14 @@ export default function BookingList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-heading font-bold">Booking Management</h2>
+        <div>
+          <h2 className="text-2xl font-heading font-bold">Booking Management</h2>
+          {totalCount > 0 && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {totalCount} total booking{totalCount !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -172,7 +207,7 @@ export default function BookingList() {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -184,7 +219,7 @@ export default function BookingList() {
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={handleFilterChange(setTypeFilter)}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
@@ -201,90 +236,117 @@ export default function BookingList() {
       {/* Bookings Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Travel Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBookings?.length === 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No bookings found
-                  </TableCell>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Travel Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredBookings?.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{booking.customer_name}</p>
-                        <p className="text-sm text-muted-foreground">{booking.customer_email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {booking.booking_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{format(new Date(booking.travel_date), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={booking.status}
-                        onValueChange={(value) => 
-                          updateStatusMutation.mutate({ id: booking.id, status: value as BookingStatus })
-                        }
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      {booking.total_price ? `₹${booking.total_price.toLocaleString()}` : '-'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openBookingDetails(booking)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this booking?')) {
-                              deleteBookingMutation.mutate(booking.id);
-                            }
-                          }}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {filteredBookings?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No bookings found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredBookings?.map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{booking.customer_name}</p>
+                          <p className="text-sm text-muted-foreground">{booking.customer_email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {booking.booking_type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{format(new Date(booking.travel_date), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={booking.status}
+                          onValueChange={(value) => 
+                            updateStatusMutation.mutate({ id: booking.id, status: value as BookingStatus })
+                          }
+                        >
+                          <SelectTrigger className="w-[130px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        {booking.total_price ? `₹${booking.total_price.toLocaleString()}` : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openBookingDetails(booking)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setBookingToDelete(booking.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {page + 1} of {totalPages} ({totalCount} bookings)
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0 || isLoading}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1 || isLoading}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Booking Details Dialog */}
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
@@ -366,6 +428,32 @@ export default function BookingList() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Booking Alert */}
+      <AlertDialog open={!!bookingToDelete} onOpenChange={() => setBookingToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this booking. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (bookingToDelete) {
+                  deleteBookingMutation.mutate(bookingToDelete);
+                  setBookingToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

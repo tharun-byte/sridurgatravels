@@ -6,7 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Car, Mountain, Calendar, Mail, TrendingUp, Users, Plus } from 'lucide-react';
 import { BOOKING_STATUSES } from '@/lib/constants';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
+
+const safeFormat = (dateStr: string | null | undefined, formatStr: string): string => {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr);
+    return isValid(d) ? format(d, formatStr) : 'N/A';
+  } catch {
+    return 'N/A';
+  }
+};
 
 interface DashboardStats {
   totalVehicles: number;
@@ -191,7 +201,7 @@ export default function AdminDashboard() {
                       <p className="font-medium">{booking.customer_name}</p>
                       <p className="text-sm text-muted-foreground">
                         {booking.booking_type === 'vehicle' ? 'Vehicle' : 'Trek'} •{' '}
-                        {format(new Date(booking.travel_date), 'MMM d, yyyy')}
+                        {safeFormat(booking.travel_date, 'MMM d, yyyy')}
                       </p>
                     </div>
                     <Badge
@@ -248,7 +258,7 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                      {format(new Date(message.created_at), 'MMM d')}
+                      {safeFormat(message.created_at, 'MMM d')}
                     </span>
                   </div>
                 ))}
