@@ -232,6 +232,22 @@ export default function Booking() {
               : treks?.find(t => t.id === selectedItemId)?.name ?? 'Trek Package',
             travelDate: travelDate ? format(travelDate, 'dd MMM yyyy') : 'TBD',
             passengers: selectedType === 'trek' ? trekPersons.length : 1,
+            specialRequirements: formData.special_requirements?.trim() || null,
+            // Vehicle-specific fields
+            ...(selectedType === 'vehicle' && {
+              pickupLocation: vehicleData.pickup_location?.trim() || null,
+              dropLocation: vehicleData.drop_location?.trim() || null,
+              tripType: vehicleData.trip_type || null,
+              travelTime: vehicleData.travel_time || null,
+              returnDate: vehicleData.return_date ? format(vehicleData.return_date, 'dd MMM yyyy') : null,
+              numDays: vehicleData.num_days || null,
+            }),
+            // Trek-specific fields
+            ...(selectedType === 'trek' && trekPersons.length > 0 && {
+              travelersInfo: trekPersons.map((p, i) =>
+                `${i + 1}. ${p.name} — Age: ${p.age}, Gender: ${p.gender}, Phone: ${p.phone || 'N/A'}`
+              ).join('\n'),
+            }),
           },
         },
       }).catch(() => { /* silent */ });

@@ -328,11 +328,11 @@ Data: ${JSON.stringify(data, null, 2)}
 
 Return ONLY a valid JSON object (NO markdown, NO explanation, NO code blocks, NO extra text):
 {
-  "telegramText": "Concise, emoji-rich Telegram notification (max 300 chars) using HTML formatting: <b>bold</b>, <i>italic</i>. Admin-focused.",
+  "telegramText": "Complete Telegram admin notification including EVERY data field provided above — name, email, phone, subject, full message text, dates, locations, trip type, traveler details, special requirements — nothing omitted. Use HTML formatting: <b>bold</b>, <i>italic</i>. No length limit. End with a link to the admin panel.",
   "adminEmailSubject": "Email subject for admin (max 60 chars, include relevant emoji)",
-  "adminEmailBody": "Inner HTML body for the admin email. Use these exact CSS classes from the template: .card, .card-header, .card-icon, .card-label, .card-body, .info-row, .info-label, .info-value, .badge, .badge-pending, .badge-new, .cta-wrap, .cta-btn, .divider. Show all event data. Include a CTA button to admin panel.",
+  "adminEmailBody": "Complete HTML body for the admin email showing ALL event data fields. Use these exact CSS classes from the template: .block, .block-title, .block-content, .info-grid, .info-row, .info-label, .info-value, .highlight, .highlight-emoji, .highlight-text, .cta-wrapper, .cta-btn, .divider. Render EVERY field (name, email, phone, subject, message, date, location, travelers, notes, etc). Include a CTA button linking to admin panel.",
   "userEmailSubject": "${hasUserEmail ? 'Email subject for the customer (max 60 chars, warm and friendly with emoji)' : 'N/A — no user email needed'}",
-  "userEmailBody": "${hasUserEmail ? 'Inner HTML body for the customer email. Use: .highlight, .highlight-greeting, .card, .card-header, .card-label, .card-body, .info-row, .info-label, .info-value, .badge, .cta-wrap, .cta-btn classes. Warm, friendly, Gen-Z energy. CTA links to https://sridurgatravels.com. DO NOT include any sensitive admin-only data.' : ''}"
+  "userEmailBody": "${hasUserEmail ? 'Complete HTML body for the customer email. Use: .block, .block-title, .block-content, .info-grid, .info-row, .info-label, .info-value, .highlight, .highlight-emoji, .highlight-text, .cta-wrapper, .cta-btn, .divider classes. Warm, friendly, Gen-Z energy. Show their booking/inquiry details. CTA links to https://sridurgatravels.com. Do NOT include sensitive admin-only data.' : ''}"
 }`
 
   const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -366,23 +366,120 @@ Return ONLY a valid JSON object (NO markdown, NO explanation, NO code blocks, NO
 function getFallbackContent(type: string, data: Record<string, unknown>) {
   const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
 
+  // Helper: build an info-row with the new template classes
+  const row = (label: string, value: unknown) =>
+    value ? `<div class="info-row"><div class="info-label">${label}</div><div class="info-value">${value}</div></div>` : ''
+
   if (type === 'new_booking') {
+    // Build Telegram message with ALL fields, no truncation
+    const tgLines = [
+      `🎉 <b>New ${String(data.bookingType).toUpperCase()} Booking!</b>`,
+      ``,
+      `👤 <b>${data.customerName}</b>`,
+      `📧 ${data.userEmail}`,
+      `📞 ${data.customerPhone}`,
+      `🚌 <b>${data.serviceName}</b>`,
+      `📅 Travel Date: ${data.travelDate}`,
+      `👥 Passengers: ${data.passengers}`,
+      data.tripType ? `🗺️ Trip Type: ${data.tripType}` : '',
+      data.pickupLocation ? `📍 Pickup: ${data.pickupLocation}` : '',
+      data.dropLocation ? `🏁 Drop: ${data.dropLocation}` : '',
+      data.travelTime ? `🕐 Pickup Time: ${data.travelTime}` : '',
+      data.returnDate ? `↩️ Return Date: ${data.returnDate}` : '',
+      data.numDays ? `📆 Number of Days: ${data.numDays}` : '',
+      data.specialRequirements ? `\n📝 <b>Special Requirements:</b>\n${data.specialRequirements}` : '',
+      data.travelersInfo ? `\n👥 <b>Traveler Details:</b>\n${data.travelersInfo}` : '',
+      ``,
+      `⏰ Received: ${now}`,
+      `⚡ <a href="https://sridurgatravels.com/admin/bookings">View &amp; Manage in Admin →</a>`,
+    ].filter(Boolean).join('\n')
+
+    // Build admin email body with ALL fields
+    const adminEmailBody = `
+<div class="block">
+  <div class="block-title">🎉 New ${data.bookingType === 'trek' ? 'Trek' : 'Vehicle'} Booking Received</div>
+  <div class="info-grid">
+    ${row('👤 Customer', data.customerName)}
+    ${row('📧 Email', data.userEmail)}
+    ${row('📞 Phone', data.customerPhone)}
+    ${row('🚌 Service', data.serviceName)}
+    ${row('📦 Type', data.bookingType)}
+    ${row('📅 Travel Date', data.travelDate)}
+    ${row('👥 Passengers', data.passengers)}
+    ${row('🗺️ Trip Type', data.tripType)}
+    ${row('📍 Pickup Location', data.pickupLocation)}
+    ${row('🏁 Drop Location', data.dropLocation)}
+    ${row('🕐 Pickup Time', data.travelTime)}
+    ${row('↩️ Return Date', data.returnDate)}
+    ${row('📆 Number of Days', data.numDays)}
+    ${row('⏰ Received At (IST)', now)}
+    ${row('📊 Status', 'Pending Confirmation')}
+  </div>
+</div>
+${data.specialRequirements ? `<div class="block"><div class="block-title">📝 Special Requirements / Notes</div><div class="block-content">${data.specialRequirements}</div></div>` : ''}
+${data.travelersInfo ? `<div class="block"><div class="block-title">👥 Traveler Details</div><div class="block-content" style="white-space:pre-line">${data.travelersInfo}</div></div>` : ''}
+<div class="cta-wrapper"><a href="https://sridurgatravels.com/admin/bookings" class="cta-btn">View &amp; Manage Booking →</a></div>`
+
     return {
-      telegramText: `🎉 <b>New Booking!</b>\n\n👤 <b>${data.customerName}</b>\n📞 ${data.customerPhone}\n📧 ${data.userEmail}\n🗺️ <i>${data.serviceName}</i>\n📅 ${data.travelDate}\n👥 ${data.passengers} passenger(s)\n\n⚡ <a href="https://sridurgatravels.com/admin/bookings">View in Admin →</a>`,
+      telegramText: tgLines,
       adminEmailSubject: `🎉 New ${data.bookingType === 'trek' ? 'Trek' : 'Vehicle'} Booking from ${data.customerName}`,
-      adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">🎉</div><div class="card-label">New Booking Received</div></div><div class="card-body"><div class="info-row"><span class="info-label">Customer</span><span class="info-value">${data.customerName}</span></div><div class="info-row"><span class="info-label">Email</span><span class="info-value">${data.userEmail}</span></div><div class="info-row"><span class="info-label">Phone</span><span class="info-value">${data.customerPhone}</span></div><div class="info-row"><span class="info-label">Service</span><span class="info-value">${data.serviceName}</span></div><div class="info-row"><span class="info-label">Type</span><span class="info-value"><span class="badge badge-new">${data.bookingType}</span></span></div><div class="info-row"><span class="info-label">Travel Date</span><span class="info-value">${data.travelDate}</span></div><div class="info-row"><span class="info-label">Passengers</span><span class="info-value">${data.passengers}</span></div><div class="info-row"><span class="info-label">Status</span><span class="info-value"><span class="badge badge-pending">Pending</span></span></div></div></div><div class="cta-wrap"><a href="https://sridurgatravels.com/admin/bookings" class="cta-btn">View &amp; Manage Booking →</a></div>`,
+      adminEmailBody,
       userEmailSubject: `Booking Received! We'll confirm soon 🎉`,
-      userEmailBody: `<div class="highlight"><div class="highlight-greeting">Hey ${data.customerName}! 🙏</div>Thanks for choosing Sri Durga Travels! We've received your booking and our team will confirm it within <strong>24 hours</strong>. Get ready for an amazing adventure! 🏔️</div><div class="card"><div class="card-header"><div class="card-icon">📋</div><div class="card-label">Your Booking Summary</div></div><div class="card-body"><div class="info-row"><span class="info-label">Service</span><span class="info-value">${data.serviceName}</span></div><div class="info-row"><span class="info-label">Travel Date</span><span class="info-value">${data.travelDate}</span></div><div class="info-row"><span class="info-label">Passengers</span><span class="info-value">${data.passengers}</span></div><div class="info-row"><span class="info-label">Status</span><span class="info-value"><span class="badge badge-pending">Pending Confirmation</span></span></div></div></div><div class="cta-wrap"><a href="https://sridurgatravels.com/contact" class="cta-btn">Questions? Reach Out →</a></div>`,
+      userEmailBody: `
+<div class="highlight">
+  <div class="highlight-emoji">🙏</div>
+  <p class="highlight-text">Hey ${data.customerName}! Thanks for choosing Sri Durga Travels!<br>We've received your booking and will confirm within <strong>24 hours</strong>.</p>
+</div>
+<div class="block">
+  <div class="block-title">📋 Your Booking Summary</div>
+  <div class="info-grid">
+    ${row('Service', data.serviceName)}
+    ${row('Travel Date', data.travelDate)}
+    ${row('Passengers', data.passengers)}
+    ${data.pickupLocation ? row('Pickup', data.pickupLocation) : ''}
+    ${data.returnDate ? row('Return', data.returnDate) : ''}
+    ${row('Status', 'Pending Confirmation ⏳')}
+  </div>
+</div>
+<div class="cta-wrapper"><a href="https://sridurgatravels.com/contact" class="cta-btn">Questions? Reach Out →</a></div>`,
     }
   }
 
   if (type === 'contact_form') {
+    // Full message — NO truncation
     return {
-      telegramText: `📬 <b>New Contact Message!</b>\n\n👤 <b>${data.name}</b>\n📧 ${data.userEmail}\n📞 ${data.phone || 'N/A'}\n📌 <i>${data.subject}</i>\n\n💬 "${String(data.message).substring(0, 120)}${String(data.message).length > 120 ? '...' : ''}"\n\n⚡ <a href="https://sridurgatravels.com/admin/messages">Reply in Admin →</a>`,
+      telegramText: `📬 <b>New Contact Message!</b>\n\n👤 <b>${data.name}</b>\n📧 ${data.userEmail}\n📞 ${data.phone || 'Not provided'}\n📌 Subject: <i>${data.subject}</i>\n⏰ ${now}\n\n💬 <b>Full Message:</b>\n${data.message}\n\n⚡ <a href="https://sridurgatravels.com/admin/messages">Open &amp; Reply in Admin →</a>`,
       adminEmailSubject: `📬 New Message from ${data.name} — ${data.subject}`,
-      adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">📬</div><div class="card-label">Contact Form Submission</div></div><div class="card-body"><div class="info-row"><span class="info-label">Name</span><span class="info-value">${data.name}</span></div><div class="info-row"><span class="info-label">Email</span><span class="info-value">${data.userEmail}</span></div><div class="info-row"><span class="info-label">Phone</span><span class="info-value">${data.phone || 'Not provided'}</span></div><div class="info-row"><span class="info-label">Subject</span><span class="info-value"><span class="badge badge-new">${data.subject}</span></span></div><div class="info-row"><span class="info-label">Received</span><span class="info-value">${now}</span></div></div></div><div class="card"><div class="card-header"><div class="card-icon">💬</div><div class="card-label">Message</div></div><div class="msg-block">${data.message}</div></div><div class="cta-wrap"><a href="https://sridurgatravels.com/admin/messages" class="cta-btn">Open &amp; Reply in Admin →</a></div>`,
+      adminEmailBody: `
+<div class="block">
+  <div class="block-title">📬 Contact Form Submission</div>
+  <div class="info-grid">
+    ${row('👤 Name', data.name)}
+    ${row('📧 Email', data.userEmail)}
+    ${row('📞 Phone', data.phone || 'Not provided')}
+    ${row('📌 Subject', data.subject)}
+    ${row('⏰ Received (IST)', now)}
+  </div>
+</div>
+<div class="block">
+  <div class="block-title">💬 Full Message</div>
+  <div class="block-content" style="white-space:pre-wrap;line-height:1.7">${data.message}</div>
+</div>
+<div class="cta-wrapper"><a href="https://sridurgatravels.com/admin/messages" class="cta-btn">Open &amp; Reply in Admin →</a></div>`,
       userEmailSubject: `Got your message! We'll be in touch soon 👋`,
-      userEmailBody: `<div class="highlight"><div class="highlight-greeting">Hi ${data.name}! 👋</div>Thanks for reaching out to Sri Durga Travels. We've received your message and our team will get back to you within <strong>24 hours</strong>. While you wait, explore our latest packages! ✨</div><div class="card"><div class="card-header"><div class="card-icon">✅</div><div class="card-label">Message Received</div></div><div class="card-body"><div class="info-row"><span class="info-label">Subject</span><span class="info-value">${data.subject}</span></div><div class="info-row"><span class="info-label">Submitted</span><span class="info-value">${now}</span></div></div></div><div class="cta-wrap"><a href="https://sridurgatravels.com" class="cta-btn">Explore Our Services →</a></div>`,
+      userEmailBody: `
+<div class="highlight">
+  <div class="highlight-emoji">👋</div>
+  <p class="highlight-text">Hi ${data.name}! Thanks for reaching out.<br>We've received your message and will reply within <strong>24 hours</strong>.</p>
+</div>
+<div class="block">
+  <div class="block-title">✅ Message Received</div>
+  <div class="info-grid">
+    ${row('Subject', data.subject)}
+    ${row('Submitted', now)}
+  </div>
+</div>
+<div class="cta-wrapper"><a href="https://sridurgatravels.com" class="cta-btn">Explore Our Services →</a></div>`,
     }
   }
 
@@ -390,17 +487,42 @@ function getFallbackContent(type: string, data: Record<string, unknown>) {
     return {
       telegramText: `👤 <b>New User Registered!</b>\n\n👤 <b>${data.name}</b>\n📧 ${data.userEmail}\n⏰ ${now}`,
       adminEmailSubject: `👤 New Registration: ${data.name}`,
-      adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">👤</div><div class="card-label">New User Registration</div></div><div class="card-body"><div class="info-row"><span class="info-label">Name</span><span class="info-value">${data.name}</span></div><div class="info-row"><span class="info-label">Email</span><span class="info-value">${data.userEmail}</span></div><div class="info-row"><span class="info-label">Registered At</span><span class="info-value">${now}</span></div></div></div>`,
+      adminEmailBody: `
+<div class="block">
+  <div class="block-title">👤 New User Registration</div>
+  <div class="info-grid">
+    ${row('Name', data.name)}
+    ${row('Email', data.userEmail)}
+    ${row('Registered At (IST)', now)}
+  </div>
+</div>`,
       userEmailSubject: `Welcome to Sri Durga Travels! 🏔️✨`,
-      userEmailBody: `<div class="highlight"><div class="highlight-greeting">Welcome, ${data.name}! 🎉</div>You're now part of the Sri Durga Travels family! Explore our amazing trek packages and vehicle rentals — your next adventure is waiting. 🏔️🚌</div><div class="divider"></div><div class="cta-wrap"><a href="https://sridurgatravels.com/booking" class="cta-btn">Book Your Adventure Now →</a></div>`,
+      userEmailBody: `
+<div class="highlight">
+  <div class="highlight-emoji">🎉</div>
+  <p class="highlight-text">Welcome, ${data.name}!<br>You're now part of the Sri Durga Travels family. Your next adventure awaits! 🏔️</p>
+</div>
+<div class="divider"></div>
+<div class="cta-wrapper"><a href="https://sridurgatravels.com/booking" class="cta-btn">Book Your Adventure Now →</a></div>`,
     }
   }
 
   if (type === 'admin_login') {
     return {
-      telegramText: `🔐 <b>Admin Login Alert</b>\n\n📧 ${data.email}\n⏰ ${now}\n\nIf this wasn't you, secure your account immediately.`,
+      telegramText: `🔐 <b>Admin Login Alert</b>\n\n📧 ${data.email}\n⏰ ${now}\n\n⚠️ If this wasn't you, secure your account immediately at sridurgatravels.com/admin`,
       adminEmailSubject: `🔐 Admin Login Detected — ${now}`,
-      adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">🔐</div><div class="card-label">Admin Login Detected</div></div><div class="card-body"><div class="info-row"><span class="info-label">Email</span><span class="info-value">${data.email}</span></div><div class="info-row"><span class="info-label">Time (IST)</span><span class="info-value">${now}</span></div></div></div><div class="highlight" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.05);font-size:13px;color:#94a3b8">If this login wasn't made by you, immediately change your password at <a href="https://sridurgatravels.com/admin" style="color:#f97316">sridurgatravels.com/admin</a></div>`,
+      adminEmailBody: `
+<div class="block">
+  <div class="block-title">🔐 Admin Login Detected</div>
+  <div class="info-grid">
+    ${row('📧 Email', data.email)}
+    ${row('⏰ Time (IST)', now)}
+  </div>
+</div>
+<div class="highlight" style="border-color:rgba(245,158,11,0.5);background:rgba(245,158,11,0.08)">
+  <div class="highlight-emoji">⚠️</div>
+  <p class="highlight-text" style="color:#b45309">If this login wasn't made by you, immediately change your password at <a href="https://sridurgatravels.com/admin" style="color:#f97316">sridurgatravels.com/admin</a></p>
+</div>`,
       userEmailSubject: '',
       userEmailBody: '',
     }
@@ -414,20 +536,41 @@ function getFallbackContent(type: string, data: Record<string, unknown>) {
       completed: 'Completed 🎉',
     }
     const label = statusLabels[String(data.status)] || String(data.status)
-    const badgeClass = data.status === 'confirmed' ? 'badge-confirmed' : data.status === 'pending' ? 'badge-pending' : 'badge-new'
     return {
-      telegramText: `🔄 <b>Booking Status Updated</b>\n\n👤 ${data.customerName}\n📊 Status: <b>${label}</b>\n⏰ ${now}`,
-      adminEmailSubject: `🔄 Booking Updated for ${data.customerName}`,
-      adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">🔄</div><div class="card-label">Booking Status Changed</div></div><div class="card-body"><div class="info-row"><span class="info-label">Customer</span><span class="info-value">${data.customerName}</span></div><div class="info-row"><span class="info-label">New Status</span><span class="info-value"><span class="badge ${badgeClass}">${label}</span></span></div><div class="info-row"><span class="info-label">Updated At</span><span class="info-value">${now}</span></div></div></div>`,
+      telegramText: `🔄 <b>Booking Status Updated</b>\n\n👤 ${data.customerName}\n📧 ${data.userEmail || 'N/A'}\n📦 Type: ${data.bookingType || 'N/A'}\n📊 New Status: <b>${label}</b>\n⏰ ${now}`,
+      adminEmailSubject: `🔄 Booking Updated: ${data.customerName} → ${label}`,
+      adminEmailBody: `
+<div class="block">
+  <div class="block-title">🔄 Booking Status Changed</div>
+  <div class="info-grid">
+    ${row('👤 Customer', data.customerName)}
+    ${row('📧 Email', data.userEmail)}
+    ${row('📦 Booking Type', data.bookingType)}
+    ${row('📊 New Status', label)}
+    ${row('⏰ Updated At (IST)', now)}
+  </div>
+</div>`,
       userEmailSubject: `Your booking status: ${label} — Sri Durga Travels`,
-      userEmailBody: `<div class="highlight"><div class="highlight-greeting">Hi ${data.customerName}! 👋</div>Great news — your Sri Durga Travels booking has been updated!</div><div class="card"><div class="card-header"><div class="card-icon">🔄</div><div class="card-label">Booking Update</div></div><div class="card-body"><div class="info-row"><span class="info-label">New Status</span><span class="info-value"><span class="badge ${badgeClass}">${label}</span></span></div><div class="info-row"><span class="info-label">Updated At</span><span class="info-value">${now}</span></div></div></div><div class="cta-wrap"><a href="https://sridurgatravels.com/contact" class="cta-btn">Questions? Contact Us →</a></div>`,
+      userEmailBody: `
+<div class="highlight">
+  <div class="highlight-emoji">🔄</div>
+  <p class="highlight-text">Hi ${data.customerName}! Your Sri Durga Travels booking has been updated.</p>
+</div>
+<div class="block">
+  <div class="block-title">📊 Booking Update</div>
+  <div class="info-grid">
+    ${row('New Status', label)}
+    ${row('Updated At', now)}
+  </div>
+</div>
+<div class="cta-wrapper"><a href="https://sridurgatravels.com/contact" class="cta-btn">Questions? Contact Us →</a></div>`,
     }
   }
 
   return {
-    telegramText: `📢 <b>Sri Durga Travels Notification</b>\n\nEvent: ${type}\n⏰ ${now}`,
-    adminEmailSubject: `Notification: ${type}`,
-    adminEmailBody: `<div class="card"><div class="card-header"><div class="card-icon">📢</div><div class="card-label">${type}</div></div><div class="card-body"><div class="msg-block">${JSON.stringify(data, null, 2)}</div></div></div>`,
+    telegramText: `📢 <b>Sri Durga Travels Notification</b>\n\nEvent: ${type}\n⏰ ${now}\n\nData: ${JSON.stringify(data)}`,
+    adminEmailSubject: `Notification: ${type} — ${now}`,
+    adminEmailBody: `<div class="block"><div class="block-title">📢 ${type}</div><div class="block-content" style="white-space:pre-wrap;font-size:13px">${JSON.stringify(data, null, 2)}</div></div>`,
     userEmailSubject: '',
     userEmailBody: '',
   }
@@ -452,7 +595,13 @@ async function sendEmail(
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
     body: JSON.stringify(payload),
   })
-  if (!resp.ok) console.error('Resend error:', await resp.text())
+  const body = await resp.text()
+  if (!resp.ok) {
+    const msg = `Resend HTTP ${resp.status}: ${body}`
+    console.error('Resend FAILED:', msg)
+    throw new Error(msg)   // propagates to .catch() in delivery report → shows FAILED ❌
+  }
+  console.log(`Resend OK [${resp.status}]: delivered to ${payload.to.join(', ')} — subject: "${payload.subject}"`)
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
