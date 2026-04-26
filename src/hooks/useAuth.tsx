@@ -107,6 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: { name },
       },
     });
+    if (!error) {
+      // Fire-and-forget notification
+      supabase.functions.invoke('send-notification', {
+        body: { type: 'new_user', data: { userEmail: email, name } },
+      }).catch(() => { /* silent */ });
+    }
     return { error: error as Error | null };
   };
 

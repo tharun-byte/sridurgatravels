@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,8 +33,11 @@ export default function AdminLogin() {
       if (error) {
         toast.error(error.message);
       } else {
-        // Check if user has admin role after login
         toast.success('Checking admin access...');
+        // Fire-and-forget admin login notification
+        supabase.functions.invoke('send-notification', {
+          body: { type: 'admin_login', data: { email } },
+        }).catch(() => { /* silent */ });
         // The useEffect will handle redirect after roles are loaded
       }
     } catch (err) {

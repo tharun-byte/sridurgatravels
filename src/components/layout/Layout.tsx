@@ -4,6 +4,7 @@ import { Footer } from './Footer';
 import { MobileBottomNav } from './MobileBottomNav';
 import { FloatingContactButtons } from './FloatingContactButtons';
 import { SEOHead } from '@/components/SEOHead';
+import { AIChatWidget } from '@/components/AIChatWidget';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export function Layout({ children }: LayoutProps) {
       <Footer />
       <MobileBottomNav />
       <FloatingContactButtons />
+      <AIChatWidget />
     </div>
   );
 }

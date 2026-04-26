@@ -217,6 +217,24 @@ export default function Booking() {
         title: 'Booking Submitted!',
         description: 'We will contact you shortly to confirm your booking.',
       });
+      // Fire-and-forget notification (doesn't block or affect UX)
+      const travelDate = selectedType === 'trek' ? trekDate : vehicleData.travel_date;
+      supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'new_booking',
+          data: {
+            userEmail: formData.customer_email.trim(),
+            customerName: formData.customer_name.trim(),
+            customerPhone: formData.customer_phone.trim(),
+            bookingType: selectedType,
+            serviceName: selectedType === 'vehicle'
+              ? vehicles?.find(v => v.id === selectedItemId)?.name ?? 'Vehicle Rental'
+              : treks?.find(t => t.id === selectedItemId)?.name ?? 'Trek Package',
+            travelDate: travelDate ? format(travelDate, 'dd MMM yyyy') : 'TBD',
+            passengers: selectedType === 'trek' ? trekPersons.length : 1,
+          },
+        },
+      }).catch(() => { /* silent */ });
     },
     onError: (error: Error) => {
       toast({

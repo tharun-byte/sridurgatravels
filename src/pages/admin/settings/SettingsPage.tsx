@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, Building2, Mail, Share2, MessageCircle, Search, Globe, Eye } from 'lucide-react';
+import { Loader2, Save, Building2, Mail, Share2, MessageCircle, Search, Globe, Eye, Send, Bot, Bell, TestTube2 } from 'lucide-react';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { COMPANY_INFO } from '@/lib/constants';
 
 type Setting = { key: string; value: string | null };
@@ -33,6 +34,18 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [fromEmail, setFromEmail] = useState('');
   const [fromName, setFromName] = useState('Sri Durga Travels');
+
+  // Telegram settings state
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+  const [telegramChatId, setTelegramChatId] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [testingTelegram, setTestingTelegram] = useState(false);
+
+  // AI settings state
+  const [nvidiaApiKey, setNvidiaApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('meta/llama-3.3-70b-instruct');
+  const [aiWidgetEnabled, setAiWidgetEnabled] = useState(true);
+  const [aiWelcomeMessage, setAiWelcomeMessage] = useState('');
 
   // Social media state
   const [facebook, setFacebook] = useState('');
@@ -88,6 +101,15 @@ export default function SettingsPage() {
       setEmailNotifications(getValue('email_notifications') === 'true');
       setFromEmail(getValue('from_email'));
       setFromName(getValue('from_name', 'Sri Durga Travels'));
+
+      setTelegramBotToken(getValue('telegram_bot_token'));
+      setTelegramChatId(getValue('telegram_chat_id', '914958962'));
+      setNotificationsEnabled(getValue('notifications_enabled', 'true') !== 'false');
+
+      setNvidiaApiKey(getValue('nvidia_api_key'));
+      setAiModel(getValue('ai_model', 'meta/llama-3.3-70b-instruct'));
+      setAiWidgetEnabled(getValue('ai_widget_enabled', 'true') !== 'false');
+      setAiWelcomeMessage(getValue('ai_welcome_message'));
 
       setFacebook(getValue('facebook_url'));
       setInstagram(getValue('instagram_url'));
@@ -180,6 +202,41 @@ export default function SettingsPage() {
       { key: 'whatsapp_number', value: whatsappNumber },
       { key: 'floating_buttons_enabled', value: floatingButtonsEnabled.toString() },
     ]);
+  };
+
+  const saveTelegramSettings = () => {
+    saveMutation.mutate([
+      { key: 'telegram_bot_token', value: telegramBotToken },
+      { key: 'telegram_chat_id', value: telegramChatId },
+      { key: 'notifications_enabled', value: notificationsEnabled.toString() },
+    ]);
+  };
+
+  const saveAiSettings = () => {
+    saveMutation.mutate([
+      { key: 'nvidia_api_key', value: nvidiaApiKey },
+      { key: 'ai_model', value: aiModel },
+      { key: 'ai_widget_enabled', value: aiWidgetEnabled.toString() },
+      { key: 'ai_welcome_message', value: aiWelcomeMessage },
+    ]);
+  };
+
+  const sendTestTelegram = async () => {
+    setTestingTelegram(true);
+    try {
+      const { error } = await supabaseClient.functions.invoke('send-notification', {
+        body: {
+          type: 'admin_login',
+          data: { email: 'test@sridurgatravels.com — this is a test notification ✅' },
+        },
+      });
+      if (error) throw error;
+      toast({ title: '✅ Test sent!', description: 'Check your Telegram and email.' });
+    } catch (err) {
+      toast({ title: 'Test failed', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setTestingTelegram(false);
+    }
   };
 
   const saveSeoSettings = () => {
@@ -294,6 +351,14 @@ export default function SettingsPage() {
           <TabsTrigger value="social" className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
             Social Media
+          </TabsTrigger>
+          <TabsTrigger value="telegram" className="flex items-center gap-2">
+            <Send className="h-4 w-4" />
+            Telegram
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            AI Assistant
           </TabsTrigger>
         </TabsList>
 
@@ -778,6 +843,205 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+        {/* Telegram & Notifications Tab */}
+        <TabsContent value="telegram">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notification Settings
+                </CardTitle>
+                <CardDescription>
+                  Configure real-time Telegram and email alerts for bookings, contact forms, and admin activity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <Label>Enable All Notifications</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Master switch — turns off Telegram + email notifications globally
+                    </p>
+                  </div>
+                  <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telegramBotToken">Telegram Bot Token</Label>
+                  <Input
+                    id="telegramBotToken"
+                    type="password"
+                    value={telegramBotToken}
+                    onChange={(e) => setTelegramBotToken(e.target.value)}
+                    placeholder="8790287057:AAHXf07z2T74PmSZTQqnbTJbQfyUA3W7jhI"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Get from <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@BotFather</a> on Telegram
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telegramChatId">Telegram Chat ID</Label>
+                  <Input
+                    id="telegramChatId"
+                    value={telegramChatId}
+                    onChange={(e) => setTelegramChatId(e.target.value)}
+                    placeholder="914958962"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Your personal Telegram user ID. Use <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@userinfobot</a> to find it
+                  </p>
+                </div>
+
+                <div className="flex gap-3 flex-wrap">
+                  <Button onClick={saveTelegramSettings} disabled={saveMutation.isPending}>
+                    {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Telegram Settings
+                  </Button>
+                  <Button variant="outline" onClick={sendTestTelegram} disabled={testingTelegram}>
+                    {testingTelegram
+                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
+                      : <><TestTube2 className="h-4 w-4 mr-2" />Send Test Notification</>
+                    }
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Events That Trigger Notifications</CardTitle>
+                <CardDescription>All of these events send alerts to Telegram + admin email, and confirmation emails to users</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  {[
+                    { icon: '🎉', event: 'New Booking', desc: 'Vehicle rental or trek booking placed', admin: true, user: true },
+                    { icon: '📬', event: 'Contact Form', desc: 'Visitor submits the contact form', admin: true, user: true },
+                    { icon: '👤', event: 'New User Registration', desc: 'Someone creates a new account', admin: true, user: true },
+                    { icon: '🔐', event: 'Admin Login', desc: 'Admin signs into the dashboard', admin: true, user: false },
+                    { icon: '🔄', event: 'Booking Status Changed', desc: 'Admin updates a booking status', admin: false, user: true },
+                  ].map(item => (
+                    <div key={item.event} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{item.icon}</span>
+                        <div>
+                          <p className="font-medium">{item.event}</p>
+                          <p className="text-muted-foreground text-xs">{item.desc}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 text-xs">
+                        {item.admin && <span className="bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">Admin</span>}
+                        {item.user && <span className="bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded-full font-medium">User</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* AI Assistant Tab */}
+        <TabsContent value="ai">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
+                  AI Chat Widget
+                </CardTitle>
+                <CardDescription>
+                  Configure the Durga AI assistant that appears on all public pages
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <Label>Enable AI Chat Widget</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Show the floating Durga AI button on all public pages
+                    </p>
+                  </div>
+                  <Switch checked={aiWidgetEnabled} onCheckedChange={setAiWidgetEnabled} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nvidiaApiKey">NVIDIA API Key</Label>
+                  <Input
+                    id="nvidiaApiKey"
+                    type="password"
+                    value={nvidiaApiKey}
+                    onChange={(e) => setNvidiaApiKey(e.target.value)}
+                    placeholder="nvapi-xxxxxxxxxxxxxxxx"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Get from <a href="https://build.nvidia.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">build.nvidia.com</a>. Also used for LLM-generated notification content.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="aiModel">AI Model</Label>
+                  <Select value={aiModel} onValueChange={setAiModel}>
+                    <SelectTrigger id="aiModel">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="meta/llama-3.3-70b-instruct">meta/llama-3.3-70b-instruct (Recommended)</SelectItem>
+                      <SelectItem value="meta/llama-3.1-8b-instruct">meta/llama-3.1-8b-instruct (Faster)</SelectItem>
+                      <SelectItem value="nvidia/llama-3.1-nemotron-70b-instruct">nvidia/nemotron-70b (Most capable)</SelectItem>
+                      <SelectItem value="mistralai/mistral-7b-instruct-v0.3">mistralai/mistral-7b-instruct (Lightweight)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="aiWelcomeMessage">Custom Welcome Message (optional)</Label>
+                  <Textarea
+                    id="aiWelcomeMessage"
+                    value={aiWelcomeMessage}
+                    onChange={(e) => setAiWelcomeMessage(e.target.value)}
+                    placeholder="Namaste! 🙏 I'm Durga, your Sri Durga Travels assistant..."
+                    rows={3}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Leave empty to use the default welcome message
+                  </p>
+                </div>
+
+                <Button onClick={saveAiSettings} disabled={saveMutation.isPending}>
+                  {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save AI Settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Features Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {[
+                  { icon: '🌐', title: 'Multi-language', desc: 'Responds in any language — Telugu, Hindi, English, Kannada, Tamil and more' },
+                  { icon: '🏔️', title: 'Business knowledge', desc: 'Knows all about Sri Durga Travels services, pricing, trekking packages, and vehicle rentals' },
+                  { icon: '📧', title: 'Smart notifications', desc: 'NVIDIA LLM writes personalized email + Telegram content for every notification event' },
+                  { icon: '💬', title: 'Multi-turn chat', desc: 'Maintains full conversation context for natural, flowing conversations' },
+                ].map(f => (
+                  <div key={f.title} className="flex items-start gap-3 p-3 border rounded-lg">
+                    <span className="text-2xl">{f.icon}</span>
+                    <div>
+                      <p className="font-medium">{f.title}</p>
+                      <p className="text-muted-foreground">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

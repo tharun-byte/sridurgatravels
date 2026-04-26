@@ -90,16 +90,31 @@ export default function BookingList() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: BookingStatus }) => {
+    mutationFn: async ({ id, status, booking }: { id: string; status: BookingStatus; booking?: Booking }) => {
       const { error } = await supabase
         .from('bookings')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
+      return { booking, status };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
       toast({ title: 'Status updated successfully' });
+      // Fire-and-forget notification to customer
+      if (result?.booking?.customer_email) {
+        supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'booking_status_changed',
+            data: {
+              userEmail: result.booking.customer_email,
+              customerName: result.booking.customer_name,
+              status: result.status,
+              bookingType: result.booking.booking_type,
+            },
+          },
+        }).catch(() => { /* silent */ });
+      }
     },
     onError: (error: Error) => {
       toast({ title: 'Error updating status', description: error.message, variant: 'destructive' });
@@ -273,8 +288,8 @@ export default function BookingList() {
                       <TableCell>
                         <Select
                           value={booking.status}
-                          onValueChange={(value) => 
-                            updateStatusMutation.mutate({ id: booking.id, status: value as BookingStatus })
+                          onValueChange={(value) =>
+                            updateStatusMutation.mutate({ id: booking.id, status: value as BookingStatus, booking })
                           }
                         >
                           <SelectTrigger className="w-[130px]">

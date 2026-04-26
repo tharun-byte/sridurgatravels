@@ -82,6 +82,19 @@ const Contact = () => {
       toast.error('Failed to send message. Please try again.');
     } else {
       toast.success('Message sent successfully! We will get back to you soon.');
+      // Fire-and-forget notification
+      supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'contact_form',
+          data: {
+            userEmail: data.email,
+            name: data.name,
+            phone: data.phone || null,
+            subject: data.subject,
+            message: data.message,
+          },
+        },
+      }).catch(() => { /* silent */ });
       form.reset();
     }
 
