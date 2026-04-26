@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// ─── Email HTML Template ──────────────────────────────────────────────────────
+// ─── Email HTML Template (Modern Gen-Z Design) ─────────────────────────────────
 function wrapInTemplate(bodyContent: string): string {
   return `<!DOCTYPE html>
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml">
@@ -19,101 +19,278 @@ function wrapInTemplate(bodyContent: string): string {
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <title>Sri Durga Travels</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    *,*::before,*::after{box-sizing:border-box}
-    body{margin:0;padding:0;background-color:#0d0d12;font-family:'Inter',system-ui,-apple-system,Arial,sans-serif;color:#e2e8f0;-webkit-text-size-adjust:100%}
-    table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
-    img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}
-    .wrapper{max-width:600px;margin:0 auto;padding:24px 16px}
-    /* Header */
-    .header{background:linear-gradient(145deg,#1a0a00 0%,#2d1200 40%,#1a0a00 100%);border-radius:20px 20px 0 0;padding:0;overflow:hidden;position:relative}
-    .header-stripe{height:4px;background:linear-gradient(90deg,#ff6b35,#f7931e,#ffd166,#f7931e,#ff6b35);background-size:200% 100%}
-    .header-content{padding:36px 40px;text-align:center;position:relative}
-    .logo-wrap{display:inline-block;margin-bottom:20px}
-    .logo-img{height:60px;width:auto;max-width:200px}
-    .header-badge{display:inline-block;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:600;color:#ff9f6b;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
-    .header-title{font-size:26px;font-weight:800;color:#fff;margin:0;line-height:1.3;letter-spacing:-0.5px}
-    .header-subtitle{font-size:14px;color:rgba(255,255,255,0.5);margin-top:8px;font-weight:400;line-height:1.5}
-    /* Body */
-    .body{background:#111827;padding:32px 40px}
-    /* Cards */
-    .card{background:#1e293b;border-radius:16px;overflow:hidden;margin:20px 0;border:1px solid rgba(255,255,255,0.06)}
-    .card-header{background:rgba(255,107,53,0.06);border-bottom:1px solid rgba(255,107,53,0.12);padding:14px 20px;display:flex;align-items:center;gap:10px}
-    .card-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#ff6b35,#f7931e);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-    .card-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f97316}
-    .card-body{padding:4px 0}
-    .info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04)}
-    .info-row:last-child{border-bottom:none}
-    .info-label{font-size:12px;color:#64748b;font-weight:500;min-width:110px}
-    .info-value{font-size:13px;color:#e2e8f0;font-weight:600;text-align:right;word-break:break-word}
-    /* Message block */
-    .msg-block{margin:0;padding:20px;background:rgba(255,255,255,0.02);font-size:14px;color:#cbd5e1;line-height:1.75;border-radius:0 0 16px 16px}
-    /* Status badges */
-    .badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
-    .badge-pending{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)}
-    .badge-confirmed{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
-    .badge-new{background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.25)}
-    /* Highlight box */
-    .highlight{background:linear-gradient(135deg,rgba(255,107,53,0.06),rgba(247,147,30,0.04));border:1px solid rgba(255,107,53,0.15);border-radius:14px;padding:20px 24px;margin:20px 0;font-size:15px;line-height:1.75;color:#e2e8f0}
-    .highlight-greeting{font-size:20px;font-weight:800;color:#fff;margin-bottom:8px}
-    /* CTA Button */
-    .cta-wrap{text-align:center;margin:28px 0 8px}
-    .cta-btn{display:inline-block;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#ffffff !important;text-decoration:none;padding:15px 36px;border-radius:12px;font-weight:700;font-size:15px;letter-spacing:0.3px;line-height:1}
-    /* Divider */
-    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,53,0.2),transparent);margin:24px 0}
-    /* Footer */
-    .footer{background:#0d0d12;border-radius:0 0 20px 20px;padding:28px 40px;text-align:center;border-top:1px solid rgba(255,107,53,0.1)}
-    .footer-logo{height:32px;width:auto;margin-bottom:14px;opacity:0.7}
-    .footer-links{margin:12px 0}
-    .footer-links a{color:#f97316;text-decoration:none;font-size:12px;font-weight:500}
-    .footer-links span{color:#374151;margin:0 8px}
-    .footer-copy{font-size:11px;color:#374151;margin-top:14px;line-height:1.6}
-    .footer-copy a{color:#4b5563;text-decoration:none}
-    /* Responsive */
-    @media(max-width:600px){
-      .wrapper{padding:12px 8px}
-      .header-content,.body,.footer{padding-left:20px !important;padding-right:20px !important}
-      .header-title{font-size:20px}
-      .info-row{flex-direction:column;align-items:flex-start;gap:4px}
-      .info-value{text-align:left !important}
-      .cta-btn{display:block;text-align:center}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      background-color: #f8f8f8;
+      color: #1a1a1a;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table { border-collapse: collapse; mso-table-lspace: 0; mso-table-rspace: 0; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; }
+    .wrapper { max-width: 620px; margin: 0 auto; padding: 20px 0; }
+
+    /* ─────────────────── HEADER ──────────────────── */
+    .header {
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff6b35 100%);
+      background-size: 200% 200%;
+      padding: 40px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(0,0,0,0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .header-content { position: relative; z-index: 2; }
+    .logo { height: 50px; width: auto; max-width: 180px; margin: 0 auto 12px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); }
+    .header-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header-subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      margin-top: 6px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ─────────────────── BODY ──────────────────── */
+    .body {
+      background: white;
+      padding: 0;
+      margin: 0 24px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* ─────────────────── GREETING & MAIN CONTENT ──────────────────── */
+    .content-wrapper {
+      padding: 32px 28px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 8px;
+      letter-spacing: -0.3px;
+    }
+    .subtext {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 24px;
+      line-height: 1.6;
+    }
+
+    /* ─────────────────── CONTENT BLOCKS ──────────────────── */
+    .block {
+      margin: 24px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #ff6b35;
+    }
+    .block-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ff6b35;
+      margin: 0 0 12px;
+    }
+    .block-content {
+      font-size: 14px;
+      color: #2a2a2a;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* ─────────────────── INFO GRID ──────────────────── */
+    .info-grid {
+      display: table;
+      width: 100%;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: table-row;
+    }
+    .info-label {
+      display: table-cell;
+      padding: 12px 16px 12px 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 45%;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .info-value {
+      display: table-cell;
+      padding: 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .info-row:last-child .info-label,
+    .info-row:last-child .info-value {
+      border-bottom: none;
+    }
+
+    /* ─────────────────── HIGHLIGHT BOX ──────────────────── */
+    .highlight {
+      background: linear-gradient(135deg, rgba(255,107,53,0.08) 0%, rgba(247,147,30,0.05) 100%);
+      border: 2px solid #ff6b35;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    .highlight-emoji {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    .highlight-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* ─────────────────── CTA BUTTON ──────────────────── */
+    .cta-wrapper {
+      text-align: center;
+      margin: 28px 0;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      color: white !important;
+      text-decoration: none;
+      padding: 14px 40px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      line-height: 1;
+      box-shadow: 0 4px 16px rgba(255,107,53,0.25);
+      mso-padding-alt: 14px 40px;
+      mso-border-radius: 8px;
+    }
+
+    /* ─────────────────── DIVIDER ──────────────────── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ff6b35, transparent);
+      margin: 24px 0;
+      opacity: 0.4;
+    }
+
+    /* ─────────────────── FOOTER ──────────────────── */
+    .footer {
+      background: #1a1a1a;
+      color: white;
+      padding: 28px 24px;
+      text-align: center;
+      margin: 0 24px 0 24px;
+      border-radius: 16px 16px 0 0;
+    }
+    .footer-logo {
+      height: 28px;
+      width: auto;
+      margin: 0 auto 12px;
+      opacity: 0.8;
+    }
+    .footer-text {
+      font-size: 12px;
+      color: #999;
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+    .footer-links {
+      margin: 14px 0 8px;
+    }
+    .footer-links a {
+      color: #ff6b35;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 0 8px;
+    }
+
+    /* ─────────────────── RESPONSIVE ──────────────────── */
+    @media (max-width: 600px) {
+      .wrapper { padding: 12px 0; }
+      .header { padding: 28px 16px; }
+      .header-title { font-size: 24px; }
+      .body, .footer { margin: 0 16px; }
+      .content-wrapper { padding: 24px 16px; }
+      .block { padding: 16px; }
+      .info-label, .info-value { display: block; width: 100% !important; padding: 10px 0 !important; border-bottom: 1px solid #e5e5e5 !important; }
+      .info-row:last-child .info-label, .info-row:last-child .info-value { border-bottom: none !important; }
+      .cta-btn { width: 100%; display: block; padding: 14px 20px !important; }
+      .footer, .body { border-radius: 12px; }
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <!-- Header -->
+    <!-- HEADER -->
     <div class="header">
-      <div class="header-stripe"></div>
       <div class="header-content">
-        <div class="logo-wrap">
-          <img src="https://sridurgatravels.com/assets/logo-transparent-Bc8nwp6R.png" alt="Sri Durga Travels" class="logo-img">
-        </div>
-        <div class="header-badge">Sri Durga Travels</div>
-        <h1 class="header-title">Your Adventure Partner in Andhra Pradesh</h1>
-        <p class="header-subtitle">Vehicle Rentals &nbsp;·&nbsp; Trekking Packages &nbsp;·&nbsp; Group Tours</p>
+        <img src="https://sridurgatravels.com/assets/logo-transparent-Bc8nwp6R.png" alt="Sri Durga Travels" class="logo">
+        <h1 class="header-title">🏔️ Sri Durga Travels</h1>
+        <p class="header-subtitle">Your Adventure Awaits</p>
       </div>
     </div>
 
-    <!-- Body -->
+    <!-- BODY -->
     <div class="body">
-      ${bodyContent}
+      <div class="content-wrapper">
+        ${bodyContent}
+      </div>
     </div>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <div class="footer">
       <img src="https://sridurgatravels.com/assets/logo-transparent-Bc8nwp6R.png" alt="Sri Durga Travels" class="footer-logo">
+      <p class="footer-text">Sri Durga Travels<br>Andhra Pradesh, India</p>
       <div class="footer-links">
         <a href="https://sridurgatravels.com">Website</a>
-        <span>·</span>
-        <a href="https://sridurgatravels.com/booking">Book Now</a>
-        <span>·</span>
         <a href="https://sridurgatravels.com/contact">Contact</a>
+        <a href="https://sridurgatravels.com">Book Now</a>
       </div>
-      <p class="footer-copy">
-        📍 Andhra Pradesh, India &nbsp;|&nbsp; ✉️ <a href="mailto:orders@sridurgatravels.com">orders@sridurgatravels.com</a><br>
-        <span style="margin-top:8px;display:inline-block">© 2025 Sri Durga Travels. All rights reserved.</span>
-      </p>
+      <p class="footer-text">© 2025 Sri Durga Travels. All rights reserved.<br>Your trusted partner in adventure.</p>
     </div>
   </div>
 </body>
